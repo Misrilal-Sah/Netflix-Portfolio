@@ -12,7 +12,7 @@ const projects: Project[] = [
     tags: ["Python", "FastAPI", "React", "ChromaDB", "Supabase", "Gemini AI"],
     github_url: "https://github.com/Misrilal-Sah/ai-query-master",
     demo_url: null,
-    screenshot_url: "/images/Projects/file-manipulation.jpg",
+    screenshot_url: "/images/hero.gif",
     featured: true,
     visible: true,
     display_order: 1,

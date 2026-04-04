@@ -72,15 +72,26 @@ export function IntroAnimation({ onComplete }: IntroAnimationProps) {
 
           {phase === "playing" && (
             <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: [0.4, 1.15, 1], opacity: [0, 1, 1] }}
               transition={{
-                duration: 1.2,
+                duration: 1.4,
+                times: [0, 0.7, 1],
                 ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
               }}
-              className="text-[120px] lg:text-[200px] font-bold text-accent leading-none"
+              className="flex flex-col items-center gap-2 select-none"
             >
-              N
+              <span
+                className="font-bold text-accent leading-none tracking-[0.08em] uppercase"
+                style={{ fontSize: "clamp(40px, 8vw, 96px)" }}
+              >
+                Misrilal Sah
+              </span>
+              <span
+                className="text-white/60 tracking-[0.3em] uppercase text-sm font-medium"
+              >
+                Full Stack Developer
+              </span>
             </motion.div>
           )}
         </motion.div>

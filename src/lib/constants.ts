@@ -9,27 +9,31 @@ export type ProfileType = (typeof PROFILE_TYPES)[number];
 
 export const PROFILES: Record<
   ProfileType,
-  { displayName: string; avatarColor: string; description: string }
+  { displayName: string; avatarColor: string; description: string; avatarImage: string }
 > = {
   recruiter: {
     displayName: "Recruiter",
     avatarColor: "#0078FF",
     description: "Professional overview focused on skills and experience",
+    avatarImage: "/images/profiles/recruiter.png",
   },
   developer: {
     displayName: "Developer",
     avatarColor: "#808080",
     description: "Technical deep-dive into projects and architecture",
+    avatarImage: "/images/profiles/developer.png",
   },
   stalker: {
     displayName: "Stalker",
     avatarColor: "#E50914",
     description: "Everything about me — no filter",
+    avatarImage: "/images/profiles/stalker.png",
   },
   adventurer: {
     displayName: "Adventurer",
     avatarColor: "#F5C518",
     description: "The fun side — hobbies, interests, and side quests",
+    avatarImage: "/images/profiles/adventurer.png",
   },
 };
 

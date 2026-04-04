@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { ProfileType } from "@/lib/constants";
@@ -25,17 +26,20 @@ export function ProfileAvatar({ profile, onClick }: ProfileAvatarProps) {
       <div
         className={cn(
           "w-[84px] h-[84px] lg:w-[120px] lg:h-[120px]",
-          "rounded-lg flex items-center justify-center",
+          "rounded-lg overflow-hidden relative",
           "border-2 border-transparent group-hover:border-white",
           "transition-colors duration-200"
         )}
-        style={{ backgroundColor: data.avatarColor }}
       >
-        <span className="text-[32px] lg:text-[48px] font-bold text-white leading-none">
-          {data.displayName[0]}
-        </span>
+        <Image
+          src={data.avatarImage}
+          alt={data.displayName}
+          fill
+          className="object-cover"
+          sizes="120px"
+        />
       </div>
-      <span className="text-[length:var(--font-size-body)] text-text-muted group-hover:text-text transition-colors">
+      <span className="text-[length:var(--font-size-body)] text-text-muted group-hover:text-text transition-colors font-medium">
         {data.displayName}
       </span>
     </motion.button>

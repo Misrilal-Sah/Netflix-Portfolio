@@ -106,3 +106,23 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Netflix-style custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E50914;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B20710;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #E50914 transparent;
+}

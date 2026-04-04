@@ -35,7 +35,7 @@ export function HeroBillboard({
       }
     >
       {/* Hero image via next/image when available */}
-      {imageUrl && (
+      {imageUrl && !imageUrl.endsWith(".gif") && (
         <Image
           src={imageUrl}
           alt={`${title} hero image`}
@@ -43,6 +43,15 @@ export function HeroBillboard({
           className="object-cover"
           sizes="100vw"
           priority={true}
+        />
+      )}
+      {/* GIF hero — use unoptimized img to preserve animation */}
+      {imageUrl && imageUrl.endsWith(".gif") && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt={`${title} hero background`}
+          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
       {/* Gradient overlay */}
