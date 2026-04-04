@@ -1,4 +1,5 @@
 import type { Experience } from "@/lib/types/database";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const experiences: Experience[] = [
   {
@@ -30,5 +31,13 @@ const experiences: Experience[] = [
 ];
 
 export async function getExperiences(): Promise<Experience[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("experience")
+      .select("*")
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return experiences.sort((a, b) => a.display_order - b.display_order);
 }

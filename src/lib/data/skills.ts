@@ -1,4 +1,5 @@
 import type { Skill } from "@/lib/types/database";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const skills: Skill[] = [
   // Frontend
@@ -36,10 +37,29 @@ const skills: Skill[] = [
 ];
 
 export async function getSkills(): Promise<Skill[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("skills")
+      .select("*")
+      .eq("visible", true)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return skills.filter((s) => s.visible).sort((a, b) => a.display_order - b.display_order);
 }
 
 export async function getSkillsByCategory(category: string): Promise<Skill[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("skills")
+      .select("*")
+      .eq("visible", true)
+      .eq("category", category)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return skills
     .filter((s) => s.visible && s.category === category)
     .sort((a, b) => a.display_order - b.display_order);

@@ -1,4 +1,5 @@
 import type { Certification } from "@/lib/types/database";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const certifications: Certification[] = [
   {
@@ -88,6 +89,15 @@ const certifications: Certification[] = [
 ];
 
 export async function getCertifications(): Promise<Certification[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("certifications")
+      .select("*")
+      .eq("visible", true)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return certifications
     .filter((c) => c.visible)
     .sort((a, b) => a.display_order - b.display_order);

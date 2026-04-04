@@ -150,16 +150,20 @@ export type ContactSubmissionInsert = Omit<
 export interface Database {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Omit<Profile, "id" | "created_at">; Update: Partial<Omit<Profile, "id" | "created_at">> };
-      projects: { Row: Project; Insert: ProjectInsert; Update: ProjectUpdate };
-      skills: { Row: Skill; Insert: SkillInsert; Update: SkillUpdate };
-      certifications: { Row: Certification; Insert: CertificationInsert; Update: CertificationUpdate };
-      experience: { Row: Experience; Insert: ExperienceInsert; Update: ExperienceUpdate };
-      about_sections: { Row: AboutSection; Insert: AboutSectionInsert; Update: AboutSectionUpdate };
-      content_variants: { Row: ContentVariant; Insert: Omit<ContentVariant, "id" | "created_at" | "updated_at">; Update: Partial<Omit<ContentVariant, "id" | "created_at" | "updated_at">> };
-      contact_submissions: { Row: ContactSubmission; Insert: ContactSubmissionInsert; Update: Partial<ContactSubmission> };
-      site_settings: { Row: SiteSetting; Insert: Omit<SiteSetting, "id" | "updated_at">; Update: Partial<Omit<SiteSetting, "id" | "updated_at">> };
-      images: { Row: ImageRecord; Insert: Omit<ImageRecord, "id" | "created_at">; Update: Partial<Omit<ImageRecord, "id" | "created_at">> };
+      profiles: { Row: Profile; Insert: Omit<Profile, "id" | "created_at">; Update: Partial<Omit<Profile, "id" | "created_at">>; Relationships: [] };
+      projects: { Row: Project; Insert: ProjectInsert; Update: ProjectUpdate; Relationships: [] };
+      skills: { Row: Skill; Insert: SkillInsert; Update: SkillUpdate; Relationships: [] };
+      certifications: { Row: Certification; Insert: CertificationInsert; Update: CertificationUpdate; Relationships: [] };
+      experience: { Row: Experience; Insert: ExperienceInsert; Update: ExperienceUpdate; Relationships: [] };
+      about_sections: { Row: AboutSection; Insert: AboutSectionInsert; Update: AboutSectionUpdate; Relationships: [] };
+      content_variants: { Row: ContentVariant; Insert: Omit<ContentVariant, "id" | "created_at" | "updated_at">; Update: Partial<Omit<ContentVariant, "id" | "created_at" | "updated_at">>; Relationships: [] };
+      contact_submissions: { Row: ContactSubmission; Insert: ContactSubmissionInsert; Update: Partial<ContactSubmission>; Relationships: [] };
+      site_settings: { Row: SiteSetting; Insert: Omit<SiteSetting, "id" | "updated_at">; Update: Partial<Omit<SiteSetting, "id" | "updated_at">>; Relationships: [] };
+      images: { Row: ImageRecord; Insert: Omit<ImageRecord, "id" | "created_at">; Update: Partial<Omit<ImageRecord, "id" | "created_at">>; Relationships: [] };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }

@@ -1,4 +1,5 @@
 import type { Project } from "@/lib/types/database";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const projects: Project[] = [
   {
@@ -259,16 +260,45 @@ const projects: Project[] = [
 ];
 
 export async function getProjects(): Promise<Project[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("projects")
+      .select("*")
+      .eq("visible", true)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return projects.filter((p) => p.visible).sort((a, b) => a.display_order - b.display_order);
 }
 
 export async function getFeaturedProjects(): Promise<Project[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("projects")
+      .select("*")
+      .eq("visible", true)
+      .eq("featured", true)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return projects.filter((p) => p.visible && p.featured).sort((a, b) => a.display_order - b.display_order);
 }
 
 export async function getProjectsByCategory(
   category: string
 ): Promise<Project[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("projects")
+      .select("*")
+      .eq("visible", true)
+      .eq("category", category)
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return projects
     .filter((p) => p.visible && p.category === category)
     .sort((a, b) => a.display_order - b.display_order);
@@ -277,11 +307,29 @@ export async function getProjectsByCategory(
 export async function getProjectById(
   id: string
 ): Promise<Project | undefined> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("projects")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (!error && data) return data;
+  }
   return projects.find((p) => p.id === id);
 }
 
 export async function getProjectBySlug(
   slug: string
 ): Promise<Project | undefined> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("projects")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    if (!error && data) return data;
+  }
   return projects.find((p) => p.slug === slug);
 }

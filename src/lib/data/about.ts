@@ -1,5 +1,6 @@
 import type { AboutSection } from "@/lib/types/database";
 import type { ProfileType } from "@/lib/constants";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const aboutSections: AboutSection[] = [
   {
@@ -49,6 +50,14 @@ const profileBioVariants: Record<ProfileType, string> = {
 };
 
 export async function getAboutSections(): Promise<AboutSection[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("about_sections")
+      .select("*")
+      .order("display_order");
+    if (!error && data) return data;
+  }
   return aboutSections.sort((a, b) => a.display_order - b.display_order);
 }
 
@@ -56,8 +65,24 @@ export async function getAboutContent(
   profileType?: ProfileType
 ): Promise<{ sections: AboutSection[]; bio: string }> {
   const sections = await getAboutSections();
-  const bio = profileType
+
+  // Try fetching profile bio from content_variants
+  let bio: string | null = null;
+  const db = getDataClient();
+  if (db && profileType) {
+    const { data } = await db
+      .from("content_variants")
+      .select("content")
+      .eq("entity_type", "about")
+      .eq("field_name", "bio")
+      .eq("profile_type", profileType)
+      .maybeSingle();
+    bio = data?.content ?? null;
+  }
+
+  const fallbackBio = profileType
     ? profileBioVariants[profileType]
     : profileBioVariants.recruiter;
-  return { sections, bio };
+
+  return { sections, bio: bio ?? fallbackBio };
 }

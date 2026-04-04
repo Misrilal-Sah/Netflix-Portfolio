@@ -1,5 +1,6 @@
 import type { Profile } from "@/lib/types/database";
 import type { ProfileType } from "@/lib/constants";
+import { getDataClient } from "@/lib/supabase/data-client";
 
 const profiles: Profile[] = [
   {
@@ -37,11 +38,25 @@ const profiles: Profile[] = [
 ];
 
 export async function getProfiles(): Promise<Profile[]> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db.from("profiles").select("*");
+    if (!error && data) return data;
+  }
   return profiles;
 }
 
 export async function getProfileByType(
   type: ProfileType
 ): Promise<Profile | undefined> {
+  const db = getDataClient();
+  if (db) {
+    const { data, error } = await db
+      .from("profiles")
+      .select("*")
+      .eq("type", type)
+      .single();
+    if (!error && data) return data;
+  }
   return profiles.find((p) => p.type === type);
 }
