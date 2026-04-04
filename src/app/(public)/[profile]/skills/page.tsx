@@ -1,7 +1,32 @@
+import type { Metadata } from "next";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
 import { getSkills } from "@/lib/data";
 import { redirect } from "next/navigation";
 import type { Skill } from "@/lib/types/database";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Skills — Misril.dev",
+    description:
+      "Production skills across React, TypeScript, Next.js, Node.js, PostgreSQL, Supabase, Docker, and more.",
+    alternates: {
+      canonical: `${SITE_URL}/recruiter/skills`,
+    },
+    openGraph: {
+      title: "Skills — Misril.dev",
+      description: "Production skills across React, TypeScript, Next.js, Node.js, PostgreSQL, Supabase, Docker, and more.",
+      url: `${SITE_URL}/recruiter/skills`,
+      images: [{ url: `${SITE_URL}/images/Misril.jpeg`, alt: "Misrilal Sah" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Skills — Misril.dev",
+      description: "Production skills across React, TypeScript, Next.js, Node.js, PostgreSQL, Supabase, Docker, and more.",
+    },
+  };
+}
 
 const PROFILE_COPY: Record<ProfileType, { title: string; subtitle: string }> =
   {

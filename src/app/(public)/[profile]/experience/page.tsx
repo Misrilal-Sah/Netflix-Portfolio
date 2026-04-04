@@ -1,7 +1,32 @@
+import type { Metadata } from "next";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
 import { getExperiences } from "@/lib/data";
 import { redirect } from "next/navigation";
 import type { Experience } from "@/lib/types/database";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Experience — Misril.dev",
+    description:
+      "Full Stack Developer at Ciklum India. B.E. Computer Engineering (CGPA 8.7) from University of Mumbai.",
+    alternates: {
+      canonical: `${SITE_URL}/recruiter/experience`,
+    },
+    openGraph: {
+      title: "Experience — Misril.dev",
+      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.7) from University of Mumbai.",
+      url: `${SITE_URL}/recruiter/experience`,
+      images: [{ url: `${SITE_URL}/images/Misril.jpeg`, alt: "Misrilal Sah" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Experience — Misril.dev",
+      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.7) from University of Mumbai.",
+    },
+  };
+}
 import { Briefcase, GraduationCap } from "lucide-react";
 
 const PROFILE_COPY: Record<ProfileType, { title: string; subtitle: string }> =
