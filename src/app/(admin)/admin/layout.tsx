@@ -2,6 +2,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminToaster } from "@/components/admin/admin-toaster";
 
 export default async function AdminLayout({
   children,
@@ -22,6 +23,7 @@ export default async function AdminLayout({
         <AdminHeader title="Dashboard" email={user.email} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+      <AdminToaster />
     </div>
   );
 }
