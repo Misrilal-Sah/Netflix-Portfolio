@@ -17,6 +17,7 @@ export function ProfileAvatar({ profile, onClick }: ProfileAvatarProps) {
     <motion.button
       onClick={() => onClick(profile)}
       className="flex flex-col items-center gap-sm group"
+      aria-label={`Select ${data.displayName} profile`}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}

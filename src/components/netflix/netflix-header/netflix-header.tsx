@@ -46,7 +46,7 @@ export function NetflixHeader() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-lg">
+        <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-lg">
           {profile &&
             NAV_ITEMS.map((item) => {
               const href = item.path
@@ -71,7 +71,7 @@ export function NetflixHeader() {
                 </Link>
               );
             })}
-        </div>
+        </nav>
 
         {/* Right section: Resume CTA + Profile avatar + mobile burger */}
         <div className="flex items-center gap-md">

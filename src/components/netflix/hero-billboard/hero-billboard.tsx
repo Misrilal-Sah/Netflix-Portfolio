@@ -23,6 +23,7 @@ export function HeroBillboard({
         "relative w-full h-[50vh] lg:h-[70vh]",
         "bg-cover bg-center"
       )}
+      aria-label={title}
       style={{
         backgroundImage: imageUrl
           ? `url(${imageUrl})`
@@ -47,6 +48,7 @@ export function HeroBillboard({
           {onPlay && (
             <button
               onClick={onPlay}
+              aria-label={`Play ${title}`}
               className="flex items-center gap-xs h-10 px-lg rounded-md bg-white text-black font-bold text-[length:var(--font-size-body)] hover:bg-white/75 transition-colors"
             >
               ▶ Play
@@ -55,6 +57,7 @@ export function HeroBillboard({
           {onMoreInfo && (
             <button
               onClick={onMoreInfo}
+              aria-label={`More info about ${title}`}
               className="flex items-center gap-xs h-10 px-lg rounded-md bg-[rgba(109,109,110,0.7)] text-white font-bold text-[length:var(--font-size-body)] hover:bg-[rgba(109,109,110,0.4)] transition-colors"
             >
               ⓘ More Info

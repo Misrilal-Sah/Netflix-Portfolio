@@ -76,6 +76,7 @@ export function ProjectsClient({
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
+            aria-pressed={activeCategory === cat}
             className={cn(
               "px-md py-xs rounded-sm text-[length:var(--font-size-body)] font-bold transition-colors border",
               activeCategory === cat
@@ -104,6 +105,8 @@ export function ProjectsClient({
                     ? { backgroundImage: `url(${project.screenshot_url})` }
                     : undefined
                 }
+                role="img"
+                aria-label={`${project.title} screenshot`}
               >
                 {!project.screenshot_url && (
                   <div className="w-full h-full flex items-center justify-center p-md">

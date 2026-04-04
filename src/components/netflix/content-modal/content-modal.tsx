@@ -127,6 +127,8 @@ export function ContentModal({
               <div
                 className="h-[200px] bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${heroImage})` }}
+                role="img"
+                aria-label={`${title} preview image`}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
                 <h2 className="absolute bottom-lg left-lg text-[length:var(--font-size-title)] font-bold text-text">
