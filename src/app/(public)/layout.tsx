@@ -15,7 +15,7 @@ export default function PublicLayout({
         Skip to main content
       </a>
       <NetflixHeader />
-      <main id="main-content" className="min-h-screen">
+      <main id="main-content" className="min-h-screen pb-14 md:pb-0">
         {children}
       </main>
       <NetflixFooter />

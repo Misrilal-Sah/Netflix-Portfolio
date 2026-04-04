@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 interface IntroAnimationProps {
@@ -8,94 +8,51 @@ interface IntroAnimationProps {
 }
 
 export function IntroAnimation({ onComplete }: IntroAnimationProps) {
-  const [phase, setPhase] = useState<"ready" | "playing" | "done">("ready");
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  const handleEnter = useCallback(() => {
-    if (phase !== "ready") return;
-
-    setPhase("playing");
-
+  useEffect(() => {
     // Play tudum sound
     try {
-      audioRef.current = new Audio("/sounds/tudum.mp3");
-      audioRef.current.play().catch(() => {
-        // Audio play may fail silently — that's OK
-      });
-    } catch {
-      // Audio not available
-    }
+      const audio = new Audio("/sounds/tudum.mp3");
+      audio.play().catch(() => {});
+    } catch {}
 
-    if (shouldReduceMotion) {
-      // Skip animation for reduced motion
-      setTimeout(() => {
-        sessionStorage.setItem("intro_seen", "true");
-        setPhase("done");
-        onComplete();
-      }, 100);
-      return;
-    }
-
-    // Animation timeline: 1.4s scale + 0.5s hold + 0.8s fade = 2.7s
-    setTimeout(() => {
+    const delay = shouldReduceMotion ? 100 : 2800;
+    const timer = setTimeout(() => {
       sessionStorage.setItem("intro_seen", "true");
-      setPhase("done");
       onComplete();
-    }, 2700);
-  }, [phase, onComplete, shouldReduceMotion]);
+    }, delay);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AnimatePresence>
-      {phase !== "done" && (
-        <motion.div
-          className="fixed inset-0 z-[var(--z-intro)] bg-black flex items-center justify-center"
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      <motion.div
+        key="intro"
+        className="fixed inset-0 z-[var(--z-intro)] bg-black flex items-center justify-center"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      >
+        <motion.span
+          initial={{ scale: 0.3, opacity: 0 }}
+          animate={{ scale: [0.3, 1.12, 1], opacity: [0, 1, 1] }}
+          transition={{
+            duration: shouldReduceMotion ? 0.01 : 1.6,
+            times: [0, 0.65, 1],
+            ease: "easeOut",
+          }}
+          className="select-none font-black tracking-[0.06em] uppercase text-accent"
+          style={{
+            fontSize: "clamp(36px, 9vw, 108px)",
+            fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+            letterSpacing: "0.08em",
+          }}
         >
-          {phase === "ready" && (
-            <motion.button
-              onClick={handleEnter}
-              className="flex flex-col items-center gap-lg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="text-[80px] lg:text-[120px] font-bold text-accent leading-none">
-                M
-              </span>
-              <span className="text-[length:var(--font-size-body)] font-bold text-text tracking-[0.05em]">
-                Click to Enter
-              </span>
-            </motion.button>
-          )}
-
-          {phase === "playing" && (
-            <motion.div
-              initial={{ scale: 0.4, opacity: 0 }}
-              animate={{ scale: [0.4, 1.15, 1], opacity: [0, 1, 1] }}
-              transition={{
-                duration: 1.4,
-                times: [0, 0.7, 1],
-                ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
-              }}
-              className="flex flex-col items-center gap-2 select-none"
-            >
-              <span
-                className="font-bold text-accent leading-none tracking-[0.08em] uppercase"
-                style={{ fontSize: "clamp(40px, 8vw, 96px)" }}
-              >
-                Misrilal Sah
-              </span>
-              <span
-                className="text-white/60 tracking-[0.3em] uppercase text-sm font-medium"
-              >
-                Full Stack Developer
-              </span>
-            </motion.div>
-          )}
-        </motion.div>
-      )}
+          Misrilal Sah
+        </motion.span>
+      </motion.div>
     </AnimatePresence>
   );
 }

@@ -18,10 +18,12 @@ export function HeroBillboard({
   onPlay,
   onMoreInfo,
 }: HeroBillboardProps) {
+  const isGif = imageUrl?.toLowerCase().endsWith(".gif");
+
   return (
     <section
       className={cn(
-        "relative w-full h-[50vh] lg:h-[70vh]",
+        "relative w-full h-[56vw] min-h-[320px] max-h-[80vh]",
         !imageUrl && "bg-cover bg-center"
       )}
       aria-label={title}
@@ -34,8 +36,18 @@ export function HeroBillboard({
           : undefined
       }
     >
-      {/* Hero image via next/image when available */}
-      {imageUrl && !imageUrl.endsWith(".gif") && (
+      {/* GIF — plain img to preserve animation */}
+      {imageUrl && isGif && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      {/* Static image via next/image */}
+      {imageUrl && !isGif && (
         <Image
           src={imageUrl}
           alt={`${title} hero image`}
@@ -45,46 +57,38 @@ export function HeroBillboard({
           priority={true}
         />
       )}
-      {/* GIF hero — use unoptimized img to preserve animation */}
-      {imageUrl && imageUrl.endsWith(".gif") && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageUrl}
-          alt={`${title} hero background`}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-bg/60 to-transparent" />
+      {/* Bottom-to-top dark gradient — Netflix style */}
+      <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
+      {/* Left-to-right dark vignette */}
+      <div className="absolute inset-0 bg-gradient-to-r from-bg/80 via-transparent to-transparent" />
 
       {/* Content */}
-      <div className="absolute bottom-[15%] left-[4vw] z-10 max-w-[50%]">
-        <h1 className="text-[32px] lg:text-[length:var(--font-size-display)] font-bold text-text leading-tight">
+      <div className="absolute bottom-[12%] left-[4vw] z-10 max-w-[55%]">
+        <h1 className="text-[28px] sm:text-[36px] lg:text-[48px] xl:text-[56px] font-black text-text leading-tight drop-shadow-lg">
           {title}
         </h1>
-        <p className="mt-md text-[length:var(--font-size-body)] text-text max-w-[80%] lg:max-w-[40vw] line-clamp-2">
+        <p className="mt-3 text-sm sm:text-base text-text/90 max-w-[90%] sm:max-w-[70%] lg:max-w-[40vw] line-clamp-3 drop-shadow">
           {description}
         </p>
 
         {/* CTA buttons */}
-        <div className="flex gap-sm mt-lg">
+        <div className="flex gap-3 mt-5">
           {onPlay && (
             <button
               onClick={onPlay}
               aria-label={`Play ${title}`}
-              className="flex items-center gap-xs h-10 px-lg rounded-md bg-white text-black font-bold text-[length:var(--font-size-body)] hover:bg-white/75 transition-colors"
+              className="flex items-center gap-2 h-10 sm:h-12 px-5 sm:px-8 rounded-md bg-white text-black font-bold text-sm sm:text-base hover:bg-white/80 transition-colors shadow-lg"
             >
-              ▶ Play
+              <span className="text-lg">&#9654;</span> Play
             </button>
           )}
           {onMoreInfo && (
             <button
               onClick={onMoreInfo}
               aria-label={`More info about ${title}`}
-              className="flex items-center gap-xs h-10 px-lg rounded-md bg-[rgba(109,109,110,0.7)] text-white font-bold text-[length:var(--font-size-body)] hover:bg-[rgba(109,109,110,0.4)] transition-colors"
+              className="flex items-center gap-2 h-10 sm:h-12 px-5 sm:px-8 rounded-md bg-white/20 backdrop-blur-sm text-white font-bold text-sm sm:text-base hover:bg-white/30 transition-colors border border-white/30"
             >
-              ⓘ More Info
+              <span className="text-base">&#9432;</span> More Info
             </button>
           )}
         </div>
