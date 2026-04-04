@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Colors */
+  --color-bg: #141414;
+  --color-surface: #181818;
+  --color-surface-hover: #232323;
+  --color-accent: #E50914;
+  --color-accent-hover: #B20710;
+  --color-text: #FFFFFF;
+  --color-text-muted: #808080;
+  --color-text-dim: #646464;
+  --color-border: #333333;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-skeleton-base: #1A1A1A;
+  --color-skeleton-shine: #252525;
+
+  /* Typography */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-size-body: 14px;
+  --font-size-heading: 20px;
+  --font-size-title: 28px;
+  --font-size-display: 48px;
+
+  /* Spacing (8-point grid) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* Named spacing exceptions (outside standard scale) */
+  --hero-padding: 80px;
+  --profile-vspace: 96px;
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.8);
+
+  /* Z-index */
+  --z-carousel-arrow: 10;
+  --z-nav: 40;
+  --z-hover-card: 50;
+  --z-modal-close: 60;
+  --z-modal: 70;
+  --z-overlay: 60;
+  --z-intro: 100;
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Base styles */
+html {
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Focus visible — accessibility baseline */
+:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
