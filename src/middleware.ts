@@ -12,9 +12,9 @@ export async function middleware(request: NextRequest) {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
-  // Refresh Supabase auth session
+  // Refresh Supabase auth session (no-op when env vars are not configured)
   const supabase = createMiddlewareClient(request, response);
-  await supabase.auth.getUser();
+  if (supabase) await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
@@ -38,6 +38,9 @@ export async function middleware(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+    if (!supabase) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
     const {
       data: { user },
     } = await supabase.auth.getUser();
