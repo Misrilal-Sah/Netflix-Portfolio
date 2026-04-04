@@ -1,6 +1,6 @@
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
 import { redirect } from "next/navigation";
-import { ContactClient } from "./contact-client";
+import { RecaptchaWrapper } from "./recaptcha-wrapper";
 
 export default async function ContactPage({
   params,
@@ -13,5 +13,7 @@ export default async function ContactPage({
     redirect("/");
   }
 
-  return <ContactClient profile={profile as ProfileType} />;
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || undefined;
+
+  return <RecaptchaWrapper profile={profile as ProfileType} siteKey={siteKey} />;
 }

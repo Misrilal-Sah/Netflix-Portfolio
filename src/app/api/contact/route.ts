@@ -8,7 +8,22 @@ const contactSchema = z.object({
   subject: z.string().max(300).optional().default(""),
   message: z.string().min(1).max(5000),
   profile: z.enum(["recruiter", "developer", "stalker", "adventurer"]),
+  recaptcha_token: z.string().optional(),
 });
+
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secretKey) return true; // Skip verification when key not configured
+
+  const params = new URLSearchParams({ secret: secretKey, response: token });
+  const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+    method: "POST",
+    body: params,
+  });
+  if (!res.ok) return false;
+  const data = (await res.json()) as { success: boolean; score?: number };
+  return data.success && (data.score ?? 1) >= 0.5;
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +37,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, email, subject, message, profile } = parsed.data;
+    const { name, email, subject, message, profile, recaptcha_token } = parsed.data;
+
+    // reCAPTCHA verification (skipped gracefully when secret key not configured)
+    if (recaptcha_token) {
+      const valid = await verifyRecaptcha(recaptcha_token);
+      if (!valid) {
+        return NextResponse.json(
+          { error: "reCAPTCHA verification failed. Please try again." },
+          { status: 400 }
+        );
+      }
+    }
 
     const brevoKey = process.env.BREVO_API_KEY;
 

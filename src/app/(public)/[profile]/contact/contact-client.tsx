@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import type { ProfileType } from "@/lib/constants";
 import { Send, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const PROFILE_COPY: Record<
   ProfileType,
@@ -39,14 +40,16 @@ const PROFILE_COPY: Record<
 
 interface ContactClientProps {
   profile: ProfileType;
+  useRecaptcha?: boolean;
 }
 
 type Status = "idle" | "sending" | "success" | "error";
 
-export function ContactClient({ profile }: ContactClientProps) {
+export function ContactClient({ profile, useRecaptcha }: ContactClientProps) {
   const copy = PROFILE_COPY[profile];
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -54,13 +57,18 @@ export function ContactClient({ profile }: ContactClientProps) {
     setErrorMsg("");
 
     const form = e.currentTarget;
-    const data = {
+    const data: Record<string, string> = {
       name: (form.elements.namedItem("name") as HTMLInputElement).value.trim(),
       email: (form.elements.namedItem("email") as HTMLInputElement).value.trim(),
       subject: (form.elements.namedItem("subject") as HTMLInputElement).value.trim(),
       message: (form.elements.namedItem("message") as HTMLTextAreaElement).value.trim(),
       profile,
     };
+
+    if (useRecaptcha && executeRecaptcha) {
+      const token = await executeRecaptcha("contact_form");
+      if (token) data.recaptcha_token = token;
+    }
 
     try {
       const res = await fetch("/api/contact", {
