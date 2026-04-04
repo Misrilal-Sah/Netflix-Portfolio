@@ -73,8 +73,18 @@ export function NetflixHeader() {
             })}
         </div>
 
-        {/* Right section: Profile avatar + mobile burger */}
+        {/* Right section: Resume CTA + Profile avatar + mobile burger */}
         <div className="flex items-center gap-md">
+          {/* Resume Download (desktop) */}
+          <a
+            href="/files/Misrilal_Sah_Resume.pdf"
+            download
+            className="hidden lg:inline-flex items-center gap-xs px-md py-1 rounded-sm border border-text-muted text-[length:var(--font-size-body)] text-text-muted hover:border-text hover:text-text transition-colors font-bold text-xs tracking-widest uppercase"
+            aria-label="Download Resume PDF"
+          >
+            Resume
+          </a>
+
           {/* Profile Avatar */}
           {profileData && (
             <div
@@ -122,6 +132,14 @@ export function NetflixHeader() {
                   </Link>
                 );
               })}
+            <a
+              href="/files/Misrilal_Sah_Resume.pdf"
+              download
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-[length:var(--font-size-body)] font-bold text-accent"
+            >
+              Download Resume
+            </a>
           </nav>
         </div>
       )}

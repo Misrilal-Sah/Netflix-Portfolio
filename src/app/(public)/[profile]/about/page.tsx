@@ -59,6 +59,13 @@ export default async function AboutPage({
           <p className="mt-sm text-[length:var(--font-size-heading)] text-text-muted max-w-2xl">
             {copy.subtitle}
           </p>
+          <a
+            href="/files/Misrilal_Sah_Resume.pdf"
+            download
+            className="mt-lg inline-flex items-center gap-sm px-xl py-md bg-accent hover:bg-accent-hover text-text font-bold rounded-sm transition-colors text-[length:var(--font-size-body)]"
+          >
+            ↓ Download Resume
+          </a>
         </div>
       </div>
 
