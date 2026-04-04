@@ -1,3 +1,17 @@
-export default function AdminContactPage() {
-  return <div className="text-[#808080] text-sm">Contact submissions viewer — coming in next plan.</div>;
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { ContactSubmission } from "@/lib/types/database";
+import { ContactSubmissionsClient } from "./contact-client";
+
+export default async function AdminContactPage() {
+  let submissions: ContactSubmission[] = [];
+  try {
+    const db = createAdminClient();
+    const { data } = await db
+      .from("contact_submissions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    submissions = (data as ContactSubmission[]) ?? [];
+  } catch { /* no service key */ }
+  return <ContactSubmissionsClient initialSubmissions={submissions} />;
 }
+
