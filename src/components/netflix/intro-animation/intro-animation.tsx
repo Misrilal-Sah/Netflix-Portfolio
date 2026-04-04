@@ -30,19 +30,19 @@ export function IntroAnimation({ onComplete }: IntroAnimationProps) {
     if (shouldReduceMotion) {
       // Skip animation for reduced motion
       setTimeout(() => {
-        localStorage.setItem("intro_seen", "true");
+        sessionStorage.setItem("intro_seen", "true");
         setPhase("done");
         onComplete();
       }, 100);
       return;
     }
 
-    // Animation timeline: 1.2s scale + 0.5s hold + 0.8s fade = 2.5s
+    // Animation timeline: 1.4s scale + 0.5s hold + 0.8s fade = 2.7s
     setTimeout(() => {
-      localStorage.setItem("intro_seen", "true");
+      sessionStorage.setItem("intro_seen", "true");
       setPhase("done");
       onComplete();
-    }, 2500);
+    }, 2700);
   }, [phase, onComplete, shouldReduceMotion]);
 
   return (

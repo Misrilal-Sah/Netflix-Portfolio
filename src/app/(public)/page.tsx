@@ -16,8 +16,10 @@ export default function HomePage() {
   const [stage, setStage] = useState<"intro" | "profiles">("intro");
 
   useEffect(() => {
-    // Check if intro was already seen
-    if (localStorage.getItem("intro_seen")) {
+    // Migrate: clear legacy persistent key from earlier builds
+    localStorage.removeItem("intro_seen");
+    // Use sessionStorage — intro plays once per tab, resets on new tab/refresh
+    if (sessionStorage.getItem("intro_seen")) {
       setStage("profiles");
     }
   }, []);
