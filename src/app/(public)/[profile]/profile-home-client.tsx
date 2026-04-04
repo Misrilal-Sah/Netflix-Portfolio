@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { ProfileType } from "@/lib/constants";
 import type { Project, Skill } from "@/lib/types/database";
 import { HeroBillboard } from "@/components/netflix/hero-billboard";
@@ -60,14 +61,20 @@ export function ProfileHomeClient({
               metadata={project.category ?? ""}
               onMoreInfo={() => setModalProject(project)}
             >
-              <div
-                className="aspect-video bg-surface rounded-md bg-cover bg-center"
-                style={
-                  project.screenshot_url
-                    ? { backgroundImage: `url(${project.screenshot_url})` }
-                    : undefined
-                }
-              />
+              <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
+                {project.screenshot_url ? (
+                  <Image
+                    src={project.screenshot_url}
+                    alt={`${project.title} screenshot`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 200px"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-surface" />
+                )}
+              </div>
             </HoverCard>
             {/* Rank number overlay */}
             <span className="absolute bottom-0 left-1 text-[96px] font-bold leading-none text-white/15 pointer-events-none select-none">
@@ -89,14 +96,20 @@ export function ProfileHomeClient({
               metadata={project.category ?? ""}
               onMoreInfo={() => setModalProject(project)}
             >
-              <div
-                className="aspect-video bg-surface rounded-md bg-cover bg-center"
-                style={
-                  project.screenshot_url
-                    ? { backgroundImage: `url(${project.screenshot_url})` }
-                    : undefined
-                }
-              />
+              <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
+                {project.screenshot_url ? (
+                  <Image
+                    src={project.screenshot_url}
+                    alt={`${project.title} screenshot`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, 200px"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-surface" />
+                )}
+              </div>
             </HoverCard>
           </div>
         ))}

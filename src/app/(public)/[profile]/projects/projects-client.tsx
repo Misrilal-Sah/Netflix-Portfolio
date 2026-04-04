@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import type { ProfileType } from "@/lib/constants";
 import type { Project } from "@/lib/types/database";
 import { HoverCard } from "@/components/netflix/hover-card";
@@ -99,16 +100,20 @@ export function ProjectsClient({
               onMoreInfo={() => setModalProject(project)}
             >
               <div
-                className="aspect-video bg-surface rounded-md bg-cover bg-center"
-                style={
-                  project.screenshot_url
-                    ? { backgroundImage: `url(${project.screenshot_url})` }
-                    : undefined
-                }
+                className="aspect-video bg-surface rounded-md overflow-hidden relative"
                 role="img"
                 aria-label={`${project.title} screenshot`}
               >
-                {!project.screenshot_url && (
+                {project.screenshot_url ? (
+                  <Image
+                    src={project.screenshot_url}
+                    alt={`${project.title} screenshot`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                    loading="lazy"
+                  />
+                ) : (
                   <div className="w-full h-full flex items-center justify-center p-md">
                     <span className="text-[length:var(--font-size-body)] font-bold text-text-muted text-center line-clamp-3">
                       {project.title}

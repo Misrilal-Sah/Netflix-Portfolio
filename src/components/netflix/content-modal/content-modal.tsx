@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface ContentModalProps {
@@ -125,13 +126,20 @@ export function ContentModal({
             {/* Hero area */}
             {heroImage && (
               <div
-                className="h-[200px] bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${heroImage})` }}
+                className="h-[200px] relative overflow-hidden"
                 role="img"
                 aria-label={`${title} preview image`}
               >
+                <Image
+                  src={heroImage}
+                  alt={`${title} preview`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 850px"
+                  priority={false}
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
-                <h2 className="absolute bottom-lg left-lg text-[length:var(--font-size-title)] font-bold text-text">
+                <h2 className="absolute bottom-lg left-lg text-[length:var(--font-size-title)] font-bold text-text z-10">
                   {title}
                 </h2>
               </div>

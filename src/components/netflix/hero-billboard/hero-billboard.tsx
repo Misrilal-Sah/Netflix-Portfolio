@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface HeroBillboardProps {
@@ -21,15 +22,29 @@ export function HeroBillboard({
     <section
       className={cn(
         "relative w-full h-[50vh] lg:h-[70vh]",
-        "bg-cover bg-center"
+        !imageUrl && "bg-cover bg-center"
       )}
       aria-label={title}
-      style={{
-        backgroundImage: imageUrl
-          ? `url(${imageUrl})`
-          : "linear-gradient(135deg, #141414 0%, #1a0a0a 50%, #141414 100%)",
-      }}
+      style={
+        !imageUrl
+          ? {
+              backgroundImage:
+                "linear-gradient(135deg, #141414 0%, #1a0a0a 50%, #141414 100%)",
+            }
+          : undefined
+      }
     >
+      {/* Hero image via next/image when available */}
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt={`${title} hero image`}
+          fill
+          className="object-cover"
+          sizes="100vw"
+          priority={true}
+        />
+      )}
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-bg/60 to-transparent" />
