@@ -1,4 +1,6 @@
 import { PROFILES, type ProfileType } from "@/lib/constants";
+import { getFeaturedProjects, getProjects, getSkills } from "@/lib/data";
+import { ProfileHomeClient } from "./profile-home-client";
 
 export default async function ProfileHomePage({
   params,
@@ -8,44 +10,19 @@ export default async function ProfileHomePage({
   const { profile } = await params;
   const profileData = PROFILES[profile as ProfileType];
 
+  const [featuredProjects, allProjects, skills] = await Promise.all([
+    getFeaturedProjects(),
+    getProjects(),
+    getSkills(),
+  ]);
+
   return (
-    <div className="pt-[68px] px-[4vw]">
-      <section className="py-3xl">
-        <h1 className="text-[length:var(--font-size-display)] font-bold text-text">
-          {profileData.displayName}
-        </h1>
-        <p className="mt-md text-[length:var(--font-size-body)] text-text-muted">
-          {profileData.description}
-        </p>
-      </section>
-
-      <section className="py-xl">
-        <h2 className="text-[length:var(--font-size-heading)] font-bold text-text mb-lg">
-          Continue Watching for {profileData.displayName}
-        </h2>
-        <div className="flex gap-sm overflow-x-auto">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-[250px] aspect-video rounded-md bg-surface"
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="py-xl">
-        <h2 className="text-[length:var(--font-size-heading)] font-bold text-text mb-lg">
-          Top Picks for {profileData.displayName}
-        </h2>
-        <div className="flex gap-sm overflow-x-auto">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-[250px] aspect-video rounded-md bg-surface"
-            />
-          ))}
-        </div>
-      </section>
-    </div>
+    <ProfileHomeClient
+      profile={profile as ProfileType}
+      profileName={profileData.displayName}
+      featuredProjects={featuredProjects}
+      allProjects={allProjects}
+      skills={skills}
+    />
   );
 }
