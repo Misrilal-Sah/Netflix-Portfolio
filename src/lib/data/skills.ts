@@ -44,7 +44,15 @@ export async function getSkills(): Promise<Skill[]> {
       .select("*")
       .eq("visible", true)
       .order("display_order");
-    if (!error && data) return data;
+    if (!error && data) {
+      // Deduplicate by id (in case of duplicates from database)
+      const seen = new Set<string>();
+      return data.filter((s) => {
+        if (seen.has(s.id)) return false;
+        seen.add(s.id);
+        return true;
+      });
+    }
   }
   return skills.filter((s) => s.visible).sort((a, b) => a.display_order - b.display_order);
 }

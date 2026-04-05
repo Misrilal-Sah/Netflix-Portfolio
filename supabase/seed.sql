@@ -151,7 +151,7 @@ INSERT INTO skills (name, category, description, display_order, visible) VALUES
 ('VS Code',       'Tools',    'Extensions, keybindings, workspace config',         1, true),
 ('Figma',         'Tools',    'Design, prototyping, dev handoff',                  2, true),
 ('Postman',       'Tools',    'API testing, collections, environments',            3, true)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (name) DO NOTHING;
 
 -- ─── CERTIFICATIONS ──────────────────────────────────────────────────────────
 INSERT INTO certifications (title, provider, date_earned, verification_url, display_order, visible) VALUES
@@ -162,7 +162,7 @@ INSERT INTO certifications (title, provider, date_earned, verification_url, disp
 ('Problem Solving (Intermediate)',                     'HackerRank',         '2023-01-01', null, 5, true),
 ('JavaScript (Intermediate)',                          'HackerRank',         '2022-11-01', null, 6, true),
 ('Introduction to Web Development with HTML, CSS, JavaScript', 'Codio (Coursera)', '2022-08-01', null, 7, true)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (title, provider) DO NOTHING;
 
 -- ─── EXPERIENCE ──────────────────────────────────────────────────────────────
 INSERT INTO experience (company, role, description, start_date, end_date, current, display_order) VALUES
@@ -176,7 +176,7 @@ INSERT INTO experience (company, role, description, start_date, end_date, curren
   'Bachelor of Engineering in Computer Engineering with CGPA 8.7/10. Coursework in data structures, algorithms, database systems, operating systems, and software engineering. Active participant in hackathons and coding competitions.',
   '2019-07-01', '2023-06-01', false, 2
 )
-ON CONFLICT DO NOTHING;
+ON CONFLICT (company, role) DO NOTHING;
 
 -- ─── ABOUT SECTIONS ──────────────────────────────────────────────────────────
 INSERT INTO about_sections (section_key, title, content, display_order) VALUES
@@ -231,5 +231,92 @@ INSERT INTO site_settings (key, value) VALUES
 ('hero_recruiter_title',  '{"text": "Full Stack Developer"}'),
 ('hero_developer_title',  '{"text": "I build things for the web"}'),
 ('hero_stalker_title',    '{"text": "You found me. Impressive."}'),
-('hero_adventurer_title', '{"text": "Quest accepted — let''s build something."}')
+('hero_adventurer_title', '{"text": "Quest accepted — let''s build something."}'),
+-- ─── Homepage Hero ─────────────────────────────────────────────────────────
+('homepage_hero', '{
+  "title": "Misrilal Sah — Software Engineer",
+  "description": "Full Stack Developer with 2+ years building production React, Node.js, and AI applications. Passionate about clean architecture and ship-ready code.",
+  "image_url": "/images/hero.gif",
+  "resume_url": "/files/Misrilal_Sah_Resume.pdf",
+  "linkedin_url": "https://linkedin.com/in/misrilalsah"
+}'),
+-- ─── Page Copy — per-persona titles & subtitles ───────────────────────────
+('page_copy_experience', '{
+  "recruiter":  {"title": "Work Experience",  "subtitle": "My professional journey and educational background."},
+  "developer":  {"title": "Career Timeline",  "subtitle": "Where I shipped code and what I built."},
+  "stalker":    {"title": "The Resume",        "subtitle": "Yes, this is basically my CV. You''re welcome."},
+  "adventurer": {"title": "Guild History",     "subtitle": "Every guild I''ve joined and the raids I''ve completed."}
+}'),
+('page_copy_about', '{
+  "recruiter":  {"title": "Candidate Summary", "subtitle": "Background, experience, and what I bring to a team."},
+  "developer":  {"title": "README.md",          "subtitle": "The architecture of a developer — design decisions included."},
+  "stalker":    {"title": "The Real Me",         "subtitle": "You chose Stalker. Here''s the unfiltered version."},
+  "adventurer": {"title": "The Lore",            "subtitle": "Origins, class traits, side quests, and final boss status."}
+}'),
+('page_copy_skills', '{
+  "recruiter":  {"title": "Core Competencies",   "subtitle": "Technologies in active production use — no padding."},
+  "developer":  {"title": "Tech Inventory",       "subtitle": "The full stack, honestly rated. Click any to know how deep."},
+  "stalker":    {"title": "What I Actually Know", "subtitle": "No fluff. No ''familiar with''. This is real."},
+  "adventurer": {"title": "Unlocked Abilities",   "subtitle": "Skills forged through quests, side projects, and late nights."}
+}'),
+('page_copy_certifications', '{
+  "recruiter":  {"title": "Credentials & Training", "subtitle": "Validated skills with official recognition."},
+  "developer":  {"title": "Certs & Courses",         "subtitle": "Formal training alongside the self-taught grind — because both matter."},
+  "stalker":    {"title": "Paper Trail",              "subtitle": "The receipts. Every single one."},
+  "adventurer": {"title": "Achievement Unlocked",     "subtitle": "Rare drops from the learning dungeon."}
+}'),
+('page_copy_projects', '{
+  "recruiter":  {"title": "Shipped Work",       "subtitle": "Production applications delivered across frontend, backend, and AI.", "allLabel": "All Projects"},
+  "developer":  {"title": "GitHub Timeline",    "subtitle": "Repositories, architectures, and build decisions.",                 "allLabel": "All Repos"},
+  "stalker":    {"title": "The Build Log",       "subtitle": "Everything I''ve made — warts and all.",                           "allLabel": "All Builds"},
+  "adventurer": {"title": "Completed Quests",   "subtitle": "Every project: an adventure with a final boss.",                   "allLabel": "All Quests"}
+}'),
+('page_copy_contact', '{
+  "recruiter":  {"title": "Get In Touch",           "subtitle": "Interested in working together? I respond promptly to professional inquiries.", "namePlaceholder": "Your Name / Company",           "msgPlaceholder": "Tell me about the role or project..."},
+  "developer":  {"title": "Open An Issue",          "subtitle": "Bug reports, feature requests, collab proposals, or just a good tech discussion.", "namePlaceholder": "Your handle or name",           "msgPlaceholder": "What''s on your mind? Code, ideas, anything..."},
+  "stalker":    {"title": "Slide Into My Inbox",    "subtitle": "Go ahead. I''m literally right here.",                                           "namePlaceholder": "Name (or alias, I''m not judging)", "msgPlaceholder": "Say whatever you were going to say..."},
+  "adventurer": {"title": "Send A Raven",           "subtitle": "Got a quest to propose? A dungeon to raid? I''m listening.",                      "namePlaceholder": "Adventurer name",               "msgPlaceholder": "Describe the quest..."}
+}')
+ON CONFLICT (key) DO NOTHING;
+
+-- ─── CONTACT INFO ────────────────────────────────────────────────────────────
+INSERT INTO contact_info (key, value) VALUES
+(
+  'profile_card',
+  '{
+    "name": "Misrilal Sah",
+    "job_title": "Software Engineer",
+    "bio": "With 2+ years of experience as a Full Stack Developer, proficient in PHP and JavaScript technologies and specializing in the edge-technologies.",
+    "location": "Pune, Maharashtra, India",
+    "photo_url": "/others/misril.png",
+    "linkedin_url": "https://www.linkedin.com/in/misrilal-sah/"
+  }'
+),
+(
+  'contact_details',
+  '{
+    "email": "misrilalsah09@gmail.com",
+    "phone": "+91 8237138622",
+    "location": "Pune, Maharashtra, India"
+  }'
+),
+(
+  'social_links',
+  '[
+    {"name": "LinkedIn",   "url": "https://www.linkedin.com/in/misrilal-sah/",         "bg_color": "#0077B5"},
+    {"name": "Instagram",  "url": "https://www.instagram.com/sah._099/",               "bg_color": "#E1306C"},
+    {"name": "Reddit",     "url": "https://reddit.com/u/Sad-Expression6099",           "bg_color": "#FF4500"},
+    {"name": "Discord",    "url": "https://discord.com/users/misrilalsah",             "bg_color": "#5865F2"},
+    {"name": "WhatsApp",   "url": "https://wa.me/918237138622",                        "bg_color": "#25D366"},
+    {"name": "Telegram",   "url": "https://t.me/John715",                              "bg_color": "#2AABEE"}
+  ]'
+),
+(
+  'availability',
+  '{
+    "is_available": true,
+    "status_text": "Available for freelance work",
+    "response_time": "Average response time: 24 hours"
+  }'
+)
 ON CONFLICT (key) DO NOTHING;

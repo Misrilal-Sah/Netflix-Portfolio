@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
-import { getExperiences } from "@/lib/data";
+import { getExperiences, getExperiencePageCopy } from "@/lib/data";
 import { redirect } from "next/navigation";
 import type { Experience } from "@/lib/types/database";
+import { Briefcase, GraduationCap } from "lucide-react";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
@@ -10,124 +11,112 @@ export function generateMetadata(): Metadata {
   return {
     title: "Experience — Misril.dev",
     description:
-      "Full Stack Developer at Ciklum India. B.E. Computer Engineering (CGPA 8.7) from University of Mumbai.",
-    alternates: {
-      canonical: `${SITE_URL}/recruiter/experience`,
-    },
+      "Full Stack Developer at Ciklum India. B.E. Computer Engineering (CGPA 8.8) from University of Mumbai.",
+    alternates: { canonical: `${SITE_URL}/recruiter/experience` },
     openGraph: {
       title: "Experience — Misril.dev",
-      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.7) from University of Mumbai.",
+      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.8) from University of Mumbai.",
       url: `${SITE_URL}/recruiter/experience`,
       images: [{ url: `${SITE_URL}/images/Misril.jpeg`, alt: "Misrilal Sah" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "Experience — Misril.dev",
-      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.7) from University of Mumbai.",
+      description: "Full Stack Developer at Ciklum India. B.E. CE (CGPA 8.8) from University of Mumbai.",
     },
   };
 }
-import { Briefcase, GraduationCap } from "lucide-react";
 
-const PROFILE_COPY: Record<ProfileType, { title: string; subtitle: string }> =
-  {
-    recruiter: {
-      title: "Career History",
-      subtitle:
-        "2+ years professional experience. B.E. Computer Engineering, University of Mumbai — CGPA 8.7/10.",
-    },
-    developer: {
-      title: "Work & Stack",
-      subtitle:
-        "What I built, the tech I used, and what I learned doing it.",
-    },
-    stalker: {
-      title: "How I Got Here",
-      subtitle: "The actual story — not the LinkedIn version.",
-    },
-    adventurer: {
-      title: "The Journey",
-      subtitle: "From level 1 to level architect. XP accumulated along the way.",
-    },
-  };
-
-function formatDateRange(start: string, end: string | null, current: boolean) {
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric",
-    });
-  return current ? `${fmt(start)} — Present` : `${fmt(start)} — ${fmt(end!)}`;
+function formatPeriod(start: string, end: string | null, current: boolean): string {
+  const startYear = new Date(start).getFullYear();
+  if (current) return `${startYear} - Present`;
+  const endYear = new Date(end!).getFullYear();
+  return `${startYear} - ${endYear}`;
 }
 
-function ExperienceCard({
-  experience,
-  index,
-}: {
-  experience: Experience;
-  index: number;
-}) {
-  const isEven = index % 2 === 0;
-  const isWork = !experience.role.toLowerCase().includes("engineer");
+function isEducationEntry(exp: Experience): boolean {
+  const lower = `${exp.company} ${exp.role}`.toLowerCase();
+  return (
+    lower.includes("university") ||
+    lower.includes("college") ||
+    lower.includes("institute") ||
+    lower.includes("bachelor") ||
+    lower.includes("b.e") ||
+    lower.includes("master")
+  );
+}
+
+function TimelineItem({ exp, index }: { exp: Experience; index: number }) {
+  const isRight = index % 2 !== 0;
+  const isEdu = isEducationEntry(exp);
+
+  const defaultCardColor = isEdu ? "#FFE5B4" : "#b7f3b7";
+  const cardBg = exp.card_color || defaultCardColor;
+  const markerBg = isEdu ? "#4479b1" : "#68b612";
+  const markerShadow = isEdu
+    ? "0 0 0 4px #141414, 0 0 0 8px rgba(0, 123, 255, 0.5)"
+    : "0 0 0 4px #141414, 0 0 0 8px rgba(229, 9, 20, 0.5)";
+  const period = formatPeriod(exp.start_date, exp.end_date, exp.current);
 
   return (
-    <div className="relative flex gap-xl">
-      {/* Timeline line + dot */}
-      <div className="flex flex-col items-center flex-shrink-0 w-8">
-        <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-            experience.current ? "bg-accent" : "bg-surface-hover"
-          }`}
-        >
-          {isWork ? (
-            <Briefcase size={14} className="text-text" />
-          ) : (
-            <GraduationCap size={14} className="text-text" />
-          )}
-        </div>
-        {/* vertical connector */}
-        <div className="w-px flex-1 bg-border mt-sm" />
+    <div className={`exp-item${isRight ? " exp-right" : ""}`}>
+      {/* Circle marker — contains the desktop date badge */}
+      <div className="exp-marker" style={{ backgroundColor: markerBg, boxShadow: markerShadow }}>
+        {isEdu ? <GraduationCap size={22} color="white" /> : <Briefcase size={22} color="white" />}
+        <div className="exp-date-desktop">{period}</div>
       </div>
 
       {/* Card */}
-      <div
-        className={`flex-1 pb-3xl ${isEven ? "" : ""}`}
-      >
-        <div className="bg-surface rounded-md p-xl border border-border hover:border-text-dim transition-colors">
-          <div className="flex items-start justify-between gap-md flex-wrap">
-            <div>
-              <h3 className="text-[length:var(--font-size-heading)] font-bold text-text">
-                {experience.role}
-              </h3>
-              <p className="text-[length:var(--font-size-body)] font-bold text-accent mt-xs">
-                {experience.company}
-              </p>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <span
-                className={`inline-block px-sm py-xs rounded-sm text-[length:var(--font-size-body)] font-bold ${
-                  experience.current
-                    ? "bg-accent text-text"
-                    : "bg-surface-hover text-text-muted"
-                }`}
-              >
-                {experience.current ? "Current" : "Completed"}
-              </span>
-              <p className="mt-xs text-[length:var(--font-size-body)] text-text-muted">
-                {formatDateRange(
-                  experience.start_date,
-                  experience.end_date,
-                  experience.current
-                )}
-              </p>
+      <div className="exp-card" style={{ backgroundColor: cardBg }}>
+        {/* Arrow notch pointing toward timeline (desktop only via CSS) */}
+        <div className="exp-arrow" style={{ backgroundColor: cardBg }} />
+
+        {/* Date badge — visible on mobile inside the card */}
+        <div className="exp-date-mobile">{period}</div>
+
+        <h3 style={{ fontSize: "1.5rem", color: "black", margin: "0 0 5px 0", fontWeight: "bold" }}>
+          {exp.role}
+        </h3>
+        <h4 style={{ fontSize: "1.1rem", color: "black", margin: "0 0 15px 0", fontWeight: "normal" }}>
+          {exp.company}
+        </h4>
+
+        {exp.bullets && exp.bullets.length > 0 && (
+          <ul style={{ margin: 0, paddingLeft: "20px" }}>
+            {exp.bullets.map((point, pi) => (
+              <li key={pi} style={{ color: "black", marginBottom: "10px", lineHeight: 1.5 }}>
+                {point}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {(!exp.bullets || exp.bullets.length === 0) && exp.description && (
+          <p style={{ color: "black", lineHeight: 1.5, margin: 0 }}>{exp.description}</p>
+        )}
+
+        {exp.technologies && exp.technologies.length > 0 && (
+          <div style={{ marginTop: "20px" }}>
+            <span style={{ display: "block", color: "black", marginBottom: "8px" }}>Technologies:</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {exp.technologies.map((tech, ti) => (
+                <span
+                  key={ti}
+                  style={{
+                    backgroundColor: "rgba(229, 9, 20, 0.2)",
+                    border: "1px solid #E50914",
+                    color: "#E50914",
+                    padding: "5px 10px",
+                    borderRadius: "15px",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {tech}
+                </span>
+              ))}
             </div>
           </div>
-          {experience.description && (
-            <p className="mt-md text-[length:var(--font-size-body)] text-text-muted leading-relaxed">
-              {experience.description}
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -144,29 +133,70 @@ export default async function ExperiencePage({
     redirect("/");
   }
 
-  const experiences = await getExperiences();
-  const copy = PROFILE_COPY[profile as ProfileType];
+  const [experiences, pageCopy] = await Promise.all([
+    getExperiences(),
+    getExperiencePageCopy(),
+  ]);
+
+  const copy = pageCopy[profile as ProfileType];
 
   return (
-    <div className="min-h-screen bg-bg pb-3xl">
-      {/* Page Header */}
-      <div className="pt-12 lg:pt-[68px]">
-        <div className="px-[4vw] py-2xl">
-          <h1 className="text-[length:var(--font-size-display)] font-bold text-text">
-            {copy.title}
-          </h1>
-          <p className="mt-sm text-[length:var(--font-size-heading)] text-text-muted max-w-2xl">
+    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px", marginBottom: "30px" }}>
+      {/* Page title */}
+      <div style={{ paddingTop: "60px" }}>
+        <h1
+          style={{
+            fontSize: "2.5rem",
+            color: "#ffffff",
+            marginBottom: copy.subtitle ? "20px" : "50px",
+            position: "relative",
+            display: "block",
+            textAlign: "center",
+            width: "100%",
+            fontWeight: "bold",
+          }}
+        >
+          {copy.title}
+          <span
+            style={{
+              position: "absolute",
+              left: "50%",
+              transform: "translateX(-50%)",
+              bottom: "-10px",
+              width: "60px",
+              height: "4px",
+              backgroundColor: "#E50914",
+              display: "block",
+            }}
+          />
+        </h1>
+        {copy.subtitle && (
+          <p
+            style={{
+              textAlign: "center",
+              color: "#808080",
+              fontSize: "1rem",
+              marginTop: "24px",
+              marginBottom: "30px",
+            }}
+          >
             {copy.subtitle}
           </p>
-        </div>
+        )}
       </div>
 
       {/* Timeline */}
-      <div className="px-[4vw] max-w-3xl">
+      <div className="exp-timeline">
         {experiences.map((exp, i) => (
-          <ExperienceCard key={exp.id} experience={exp} index={i} />
+          <TimelineItem key={exp.id} exp={exp} index={i} />
         ))}
+
+        {/* Star end marker */}
+        <div className="exp-end-marker">
+          <div className="exp-star">⭐</div>
+        </div>
       </div>
     </div>
   );
 }
+

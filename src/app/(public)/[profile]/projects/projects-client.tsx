@@ -1,200 +1,252 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useState, useMemo } from "react";
 import type { ProfileType } from "@/lib/constants";
 import type { Project } from "@/lib/types/database";
-import { HoverCard } from "@/components/netflix/hover-card";
-import { ContentModal } from "@/components/netflix/content-modal";
-import { ExternalLink, Code } from "lucide-react";
+import { ProjectCard } from "@/components/netflix/project-card";
+import { ProjectDetailModal } from "@/components/netflix/project-detail-modal";
 import { cn } from "@/lib/utils";
-
-const PROFILE_COPY: Record<
-  ProfileType,
-  { title: string; subtitle: string; allLabel: string }
-> = {
-  recruiter: {
-    title: "Shipped Work",
-    subtitle:
-      "Production applications delivered across frontend, backend, and AI.",
-    allLabel: "All Projects",
-  },
-  developer: {
-    title: "GitHub Timeline",
-    subtitle: "Repositories, architectures, and build decisions.",
-    allLabel: "All Repos",
-  },
-  stalker: {
-    title: "The Build Log",
-    subtitle: "Everything I've made — warts and all.",
-    allLabel: "All Builds",
-  },
-  adventurer: {
-    title: "Completed Quests",
-    subtitle: "Every project: an adventure with a final boss.",
-    allLabel: "All Quests",
-  },
-};
+import type { ProjectsPageCopy } from "@/lib/data/page-copy";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface ProjectsClientProps {
   profile: ProfileType;
   projects: Project[];
   categories: string[];
+  tags: string[];
+  copy: ProjectsPageCopy;
 }
 
 export function ProjectsClient({
   profile,
   projects,
   categories,
+  tags,
+  copy,
 }: ProjectsClientProps) {
-  const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(
+    new Set()
+  );
+  const [activeTags, setActiveTags] = useState<Set<string>>(new Set());
   const [modalProject, setModalProject] = useState<Project | null>(null);
+  const [showCategories, setShowCategories] = useState(true);
+  const [showStack, setShowStack] = useState(false);
 
-  const copy = PROFILE_COPY[profile];
+  // Filter projects by selected categories AND tags (intersection)
+  const filtered = useMemo(() => {
+    return projects.filter((p) => {
+      const categoryMatch =
+        activeCategories.size === 0 ||
+        (p.category && activeCategories.has(p.category));
+      const tagMatch =
+        activeTags.size === 0 ||
+        p.tags.some((t) => activeTags.has(t));
+      return categoryMatch && tagMatch;
+    });
+  }, [projects, activeCategories, activeTags]);
 
-  const filtered =
-    activeCategory === "All"
-      ? projects
-      : projects.filter((p) => p.category === activeCategory);
+  function toggleCategory(cat: string) {
+    setActiveCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      return next;
+    });
+  }
+
+  function toggleTag(tag: string) {
+    setActiveTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  }
+
+  function clearAllFilters() {
+    setActiveCategories(new Set());
+    setActiveTags(new Set());
+  }
+
+  const hasFilters = activeCategories.size > 0 || activeTags.size > 0;
 
   return (
-    <div className="min-h-screen bg-bg pb-3xl">
+    <div className="min-h-screen bg-bg pb-2xl">
       {/* Page Header */}
       <div className="pt-12 lg:pt-[68px]">
-        <div className="px-[4vw] py-2xl">
+        <div className="px-[4vw] py-lg">
           <h1 className="text-[length:var(--font-size-display)] font-bold text-text">
             {copy.title}
           </h1>
-          <p className="mt-sm text-[length:var(--font-size-heading)] text-text-muted max-w-2xl">
+          <p className="mt-2 text-base text-text-muted w-full">
             {copy.subtitle}
           </p>
         </div>
       </div>
 
-      {/* Category Filter */}
-      <div className="px-[4vw] pb-xl flex flex-wrap gap-sm">
-        {["All", ...categories].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            aria-pressed={activeCategory === cat}
-            className={cn(
-              "px-md py-xs rounded-sm text-[length:var(--font-size-body)] font-bold transition-colors border",
-              activeCategory === cat
-                ? "bg-text text-bg border-text"
-                : "bg-transparent text-text-muted border-border hover:border-text hover:text-text"
-            )}
-          >
-            {cat === "All" ? copy.allLabel : cat}
-          </button>
-        ))}
+      {/* Category Filters — collapsible, open by default */}
+      <div className="px-[4vw] pb-md">
+        <button
+          onClick={() => setShowCategories(!showCategories)}
+          className="flex items-center gap-2 mb-2 group"
+        >
+          <span className="text-text-dim text-xs font-bold uppercase tracking-wider group-hover:text-text transition-colors">
+            Category
+          </span>
+          {activeCategories.size > 0 && (
+            <span className="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {activeCategories.size}
+            </span>
+          )}
+          {showCategories ? (
+            <ChevronUp size={14} className="text-text-dim" />
+          ) : (
+            <ChevronDown size={14} className="text-text-dim" />
+          )}
+          {hasFilters && (
+            <span
+              onClick={(e) => { e.stopPropagation(); clearAllFilters(); }}
+              className="text-accent text-xs hover:underline ml-auto cursor-pointer"
+            >
+              Clear all
+            </span>
+          )}
+        </button>
+        <AnimatePresence initial={false}>
+          {showCategories && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-wrap gap-2 pb-1">
+                {categories.map((cat) => {
+                  const isActive = activeCategories.has(cat);
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => toggleCategory(cat)}
+                      aria-pressed={isActive}
+                      className={cn(
+                        "px-3 py-1.5 rounded text-xs font-bold transition-all duration-200 border",
+                        isActive
+                          ? "bg-accent text-white border-accent"
+                          : "bg-transparent text-text-muted border-border hover:border-text-muted hover:text-text"
+                      )}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Stack / Tag Filters — collapsible, hidden by default */}
+      <div className="px-[4vw] pb-xl">
+        <button
+          onClick={() => setShowStack(!showStack)}
+          className="flex items-center gap-2 mb-2 group"
+        >
+          <span className="text-text-dim text-xs font-bold uppercase tracking-wider group-hover:text-text transition-colors">
+            Stack
+          </span>
+          {activeTags.size > 0 && (
+            <span className="bg-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {activeTags.size}
+            </span>
+          )}
+          {showStack ? (
+            <ChevronUp size={14} className="text-text-dim" />
+          ) : (
+            <ChevronDown size={14} className="text-text-dim" />
+          )}
+        </button>
+        <AnimatePresence initial={false}>
+          {showStack && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-wrap gap-2 pb-1">
+                {tags.map((tag) => {
+                  const isActive = activeTags.has(tag);
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      aria-pressed={isActive}
+                      className={cn(
+                        "px-3 py-1 rounded text-[11px] font-semibold transition-all duration-200",
+                        isActive
+                          ? "bg-accent text-white"
+                          : "bg-surface-hover text-text-muted hover:text-text"
+                      )}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Results count */}
+      <div className="px-[4vw] pb-md">
+        <span className="text-text-dim text-xs">
+          Showing {filtered.length} of {projects.length} projects
+        </span>
       </div>
 
       {/* Projects Grid */}
-      <div className="px-[4vw] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-sm">
-        {filtered.map((project) => (
-          <div key={project.id} className="relative group">
-            <HoverCard
-              title={project.title}
-              metadata={project.category ?? ""}
-              onMoreInfo={() => setModalProject(project)}
-            >
-              <div
-                className="aspect-video bg-surface rounded-md overflow-hidden relative"
-                role="img"
-                aria-label={`${project.title} screenshot`}
-              >
-                {project.screenshot_url ? (
-                  <Image
-                    src={project.screenshot_url}
-                    alt={`${project.title} screenshot`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center p-md">
-                    <span className="text-[length:var(--font-size-body)] font-bold text-text-muted text-center line-clamp-3">
-                      {project.title}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </HoverCard>
-            {project.featured && (
-              <span className="absolute top-xs left-xs bg-accent text-text text-[10px] font-bold px-xs py-[2px] rounded-sm pointer-events-none">
-                FEATURED
-              </span>
-            )}
-          </div>
-        ))}
+      <div className="px-[4vw]">
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          layout
+        >
+          <AnimatePresence mode="popLayout">
+            {filtered.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                profile={profile}
+                onDetails={() => setModalProject(project)}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
       {filtered.length === 0 && (
         <div className="px-[4vw] py-3xl text-center">
           <p className="text-[length:var(--font-size-heading)] text-text-muted">
-            No projects in this category yet.
+            No projects match your filters.
           </p>
+          <button
+            onClick={clearAllFilters}
+            className="mt-md text-accent hover:underline text-sm"
+          >
+            Clear all filters
+          </button>
         </div>
       )}
 
       {/* Detail Modal */}
-      <ContentModal
-        isOpen={!!modalProject}
+      <ProjectDetailModal
+        project={modalProject}
+        profile={profile}
         onClose={() => setModalProject(null)}
-        title={modalProject?.title ?? ""}
-        heroImage={modalProject?.screenshot_url ?? undefined}
-      >
-        {modalProject && (
-          <div className="space-y-md">
-            {modalProject.category && (
-              <span className="inline-block text-[length:var(--font-size-body)] text-text-muted uppercase tracking-widest">
-                {modalProject.category}
-              </span>
-            )}
-            <p className="text-[length:var(--font-size-body)] text-text leading-relaxed">
-              {modalProject.description}
-            </p>
-            {modalProject.tags.length > 0 && (
-              <div className="flex flex-wrap gap-xs">
-                {modalProject.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-sm py-xs rounded-sm bg-surface-hover text-[length:var(--font-size-body)] text-text-muted"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-            <div className="flex gap-md pt-sm">
-              {modalProject.github_url && (
-                <a
-                  href={modalProject.github_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-xs text-[length:var(--font-size-body)] text-text hover:text-accent transition-colors"
-                >
-                  <Code size={16} />
-                  GitHub
-                </a>
-              )}
-              {modalProject.demo_url && (
-                <a
-                  href={modalProject.demo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-xs text-[length:var(--font-size-body)] text-text hover:text-accent transition-colors"
-                >
-                  <ExternalLink size={16} />
-                  Live Demo
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-      </ContentModal>
+      />
     </div>
   );
 }

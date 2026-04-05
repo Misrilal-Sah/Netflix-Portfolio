@@ -9,21 +9,50 @@ export interface Profile {
   created_at: string;
 }
 
+export interface ProjectButtonConfig {
+  demo_text?: string;
+  demo_color?: string;
+  details_text?: string;
+  details_color?: string;
+  github_text?: string;
+  github_color?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   slug: string;
   description: string | null;
   category: string | null;
+  sub_category: string | null;
   tags: string[];
   github_url: string | null;
   demo_url: string | null;
   screenshot_url: string | null;
+  readme_content: string | null;
+  date_label: string | null;
+  button_config: Record<string, ProjectButtonConfig>;
   featured: boolean;
   visible: boolean;
   display_order: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProjectCategory {
+  id: string;
+  name: string;
+  display_order: number;
+  visible: boolean;
+  created_at: string;
+}
+
+export interface ProjectTag {
+  id: string;
+  name: string;
+  display_order: number;
+  visible: boolean;
+  created_at: string;
 }
 
 export interface Skill {
@@ -44,6 +73,8 @@ export interface Certification {
   provider: string;
   logo_url: string | null;
   date_earned: string | null;
+  date_expires: string | null;
+  short_description: string | null;
   verification_url: string | null;
   display_order: number;
   visible: boolean;
@@ -62,6 +93,10 @@ export interface Experience {
   display_order: number;
   created_at: string;
   updated_at: string;
+  // Optional fields — populated in static fallback and stored in DB when available
+  bullets?: string[];
+  technologies?: string[];
+  card_color?: string | null;
 }
 
 export interface AboutSection {
@@ -114,6 +149,37 @@ export interface ImageRecord {
   created_at: string;
 }
 
+// ─── Homepage CMS types ─────────────────────────────────────────────────────
+
+export type HomepageSectionType = "continue_watching" | "top_picks";
+export type HomepageLinkType = "skills" | "certifications" | "experience" | "about" | "contact" | "projects" | "other";
+
+export interface HomepageCard {
+  id: string;
+  profile_type: "recruiter" | "developer" | "stalker" | "adventurer";
+  section: HomepageSectionType;
+  title: string;
+  subtitle: string | null;
+  image_url: string | null;
+  link_type: HomepageLinkType;
+  link_url: string;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HomepageProjectPick {
+  id: string;
+  profile_type: "recruiter" | "developer" | "stalker" | "adventurer";
+  project_id: string;
+  display_order: number;
+  created_at: string;
+}
+
+export type HomepageCardInsert = Omit<HomepageCard, "id" | "created_at" | "updated_at">;
+export type HomepageCardUpdate = Partial<HomepageCardInsert>;
+export type HomepageProjectPickInsert = Omit<HomepageProjectPick, "id" | "created_at">;
+
 // ─── Insert / Update types ──────────────────────────────────────────────────
 
 export type ProjectInsert = Omit<Project, "id" | "created_at" | "updated_at">;
@@ -160,6 +226,8 @@ export interface Database {
       contact_submissions: { Row: ContactSubmission; Insert: ContactSubmissionInsert; Update: Partial<ContactSubmission>; Relationships: [] };
       site_settings: { Row: SiteSetting; Insert: Omit<SiteSetting, "id" | "updated_at">; Update: Partial<Omit<SiteSetting, "id" | "updated_at">>; Relationships: [] };
       images: { Row: ImageRecord; Insert: Omit<ImageRecord, "id" | "created_at">; Update: Partial<Omit<ImageRecord, "id" | "created_at">>; Relationships: [] };
+      homepage_cards: { Row: HomepageCard; Insert: HomepageCardInsert; Update: HomepageCardUpdate; Relationships: [] };
+      homepage_project_picks: { Row: HomepageProjectPick; Insert: HomepageProjectPickInsert; Update: Partial<HomepageProjectPickInsert>; Relationships: [] };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

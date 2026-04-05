@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import type { ProfileType } from "@/lib/constants";
-import type { Project, Skill } from "@/lib/types/database";
+import type { Project, HomepageCard, HomepageProjectPick } from "@/lib/types/database";
+import type { HomepageHero } from "@/lib/data/contact-info";
 import { HeroBillboard } from "@/components/netflix/hero-billboard";
 import { ContinueWatching } from "@/components/netflix/continue-watching";
 import { ContentRow } from "@/components/netflix/content-row";
@@ -13,126 +14,101 @@ import { ContentModal } from "@/components/netflix/content-modal";
 interface ProfileHomeClientProps {
   profile: ProfileType;
   profileName: string;
-  featuredProjects: Project[];
-  allProjects: Project[];
-  skills: Skill[];
+  hero: HomepageHero;
+  continueWatchingCards: HomepageCard[];
+  topPicksCards: HomepageCard[];
+  projectPicks: (HomepageProjectPick & { project: Project })[];
 }
 
 export function ProfileHomeClient({
+  profile,
   profileName,
-  featuredProjects,
-  allProjects,
-  skills,
+  hero,
+  continueWatchingCards,
+  topPicksCards,
+  projectPicks,
 }: ProfileHomeClientProps) {
   const [modalProject, setModalProject] = useState<Project | null>(null);
 
-  const heroProject = featuredProjects[0];
-
   return (
     <div className="min-h-screen bg-bg">
-      {/* Hero Billboard */}
+      {/* Hero Billboard — personal intro */}
       <HeroBillboard
-        title={heroProject?.title ?? "Welcome to Misril.dev"}
-        description={
-          heroProject?.description ?? "Explore projects, skills, and more."
-        }
-        imageUrl={heroProject?.screenshot_url ?? undefined}
-        onPlay={() => {}}
-        onMoreInfo={
-          heroProject ? () => setModalProject(heroProject) : undefined
-        }
+        title={hero.title}
+        description={hero.description}
+        imageUrl={hero.image_url}
+        resumeUrl={hero.resume_url}
+        linkedinUrl={hero.linkedin_url}
       />
 
-      {/* Continue Watching */}
-      <ContinueWatching
-        profileName={profileName}
-        items={allProjects.slice(0, 6)}
-      />
+      {/* Continue Watching — CMS managed */}
+      <ContinueWatching items={continueWatchingCards} />
 
-      {/* Top Picks */}
-      <ContentRow title={`Top Picks for ${profileName}`}>
-        {featuredProjects.map((project, i) => (
-          <div
-            key={project.id}
-            className="relative flex-shrink-0 w-[calc((100%-40px)/6)] min-w-[200px]"
-          >
-            <HoverCard
-              title={project.title}
-              metadata={project.category ?? ""}
-              onMoreInfo={() => setModalProject(project)}
+      {/* Top Picks for You — CMS managed */}
+      {topPicksCards.length > 0 && (
+        <ContentRow title="Top Picks for You">
+          {topPicksCards.map((card) => (
+            <div
+              key={card.id}
+              className="relative flex-shrink-0 w-[calc((100%-24px)/4)] min-w-[220px]"
             >
-              <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
-                {project.screenshot_url ? (
-                  <Image
-                    src={project.screenshot_url}
-                    alt={`${project.title} screenshot`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, 200px"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-surface" />
-                )}
-              </div>
-            </HoverCard>
-            {/* Rank number overlay */}
-            <span className="absolute bottom-0 left-1 text-[96px] font-bold leading-none text-white/15 pointer-events-none select-none">
-              {i + 1}
-            </span>
-          </div>
-        ))}
-      </ContentRow>
-
-      {/* All Projects */}
-      <ContentRow title="Projects">
-        {allProjects.map((project) => (
-          <div
-            key={project.id}
-            className="flex-shrink-0 w-[calc((100%-40px)/6)] min-w-[200px]"
-          >
-            <HoverCard
-              title={project.title}
-              metadata={project.category ?? ""}
-              onMoreInfo={() => setModalProject(project)}
-            >
-              <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
-                {project.screenshot_url ? (
-                  <Image
-                    src={project.screenshot_url}
-                    alt={`${project.title} screenshot`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, 200px"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-surface" />
-                )}
-              </div>
-            </HoverCard>
-          </div>
-        ))}
-      </ContentRow>
-
-      {/* Skills & Technologies */}
-      <ContentRow title="Skills & Technologies">
-        {skills.map((skill) => (
-          <div
-            key={skill.id}
-            className="flex-shrink-0 w-[calc((100%-40px)/6)] min-w-[150px]"
-          >
-            <div className="aspect-[2/3] bg-surface rounded-md flex flex-col items-center justify-center p-md">
-              <span className="text-[length:var(--font-size-heading)] font-bold text-text text-center">
-                {skill.name}
-              </span>
-              <span className="mt-xs text-[length:var(--font-size-body)] text-text-muted">
-                {skill.category}
-              </span>
+              <HoverCard
+                title={card.title}
+                metadata={card.subtitle ?? ""}
+                href={card.link_url || undefined}
+              >
+                <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
+                  {card.image_url ? (
+                    <Image
+                      src={card.image_url}
+                      alt={card.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-surface" />
+                  )}
+                </div>
+              </HoverCard>
             </div>
-          </div>
-        ))}
-      </ContentRow>
+          ))}
+        </ContentRow>
+      )}
+
+      {/* Projects — selected picks */}
+      {projectPicks.length > 0 && (
+        <ContentRow title="Projects">
+          {projectPicks.map(({ id, project }) => (
+            <div
+              key={id}
+              className="flex-shrink-0 w-[calc((100%-24px)/4)] min-w-[220px]"
+            >
+              <HoverCard
+                title={project.title}
+                metadata={project.category ?? ""}
+                onMoreInfo={() => setModalProject(project)}
+              >
+                <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
+                  {project.screenshot_url ? (
+                    <Image
+                      src={project.screenshot_url}
+                      alt={`${project.title} screenshot`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-surface" />
+                  )}
+                </div>
+              </HoverCard>
+            </div>
+          ))}
+        </ContentRow>
+      )}
 
       {/* Content Modal */}
       <ContentModal

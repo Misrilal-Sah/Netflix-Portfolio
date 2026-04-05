@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminToaster } from "@/components/admin/admin-toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default async function AdminLayout({
   children,
@@ -39,6 +40,7 @@ export default async function AdminLayout({
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
       <AdminToaster />
+      <ConfirmDialog />
     </div>
   );
 }

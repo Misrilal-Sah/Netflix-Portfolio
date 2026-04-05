@@ -26,10 +26,14 @@ CREATE TABLE projects (
   slug text UNIQUE NOT NULL,
   description text,
   category text,
+  sub_category text,
   tags text[] DEFAULT '{}',
   github_url text,
   demo_url text,
   screenshot_url text,
+  readme_content text,
+  date_label text,
+  button_config jsonb DEFAULT '{}',
   featured boolean DEFAULT false,
   visible boolean DEFAULT true,
   display_order integer DEFAULT 0,
@@ -41,10 +45,36 @@ ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read" ON projects FOR SELECT USING (visible = true);
 CREATE POLICY "admin_all" ON projects FOR ALL USING (auth.role() = 'authenticated');
 
+-- ─── PROJECT CATEGORIES ─────────────────────────────────────────────────────
+CREATE TABLE project_categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text UNIQUE NOT NULL,
+  display_order integer DEFAULT 0,
+  visible boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE project_categories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read" ON project_categories FOR SELECT USING (visible = true);
+CREATE POLICY "admin_all" ON project_categories FOR ALL USING (auth.role() = 'authenticated');
+
+-- ─── PROJECT TAGS (STACK) ───────────────────────────────────────────────────
+CREATE TABLE project_tags (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text UNIQUE NOT NULL,
+  display_order integer DEFAULT 0,
+  visible boolean DEFAULT true,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE project_tags ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read" ON project_tags FOR SELECT USING (visible = true);
+CREATE POLICY "admin_all" ON project_tags FOR ALL USING (auth.role() = 'authenticated');
+
 -- ─── SKILLS ──────────────────────────────────────────────────────────────────
 CREATE TABLE skills (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name text NOT NULL,
+  name text NOT NULL UNIQUE,
   category text NOT NULL,
   icon_url text,
   description text,
@@ -65,11 +95,14 @@ CREATE TABLE certifications (
   provider text NOT NULL,
   logo_url text,
   date_earned date,
+  date_expires date,
+  short_description text,
   verification_url text,
   display_order integer DEFAULT 0,
   visible boolean DEFAULT true,
   created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE (title, provider)
 );
 
 ALTER TABLE certifications ENABLE ROW LEVEL SECURITY;
@@ -86,8 +119,10 @@ CREATE TABLE experience (
   end_date date,
   current boolean DEFAULT false,
   display_order integer DEFAULT 0,
+  card_color text,
   created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+  UNIQUE (company, role)
 );
 
 ALTER TABLE experience ENABLE ROW LEVEL SECURITY;
@@ -169,6 +204,24 @@ CREATE TABLE images (
 ALTER TABLE images ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "public_read" ON images FOR SELECT USING (true);
 CREATE POLICY "admin_all" ON images FOR ALL USING (auth.role() = 'authenticated');
+
+-- ─── CONTACT INFO ────────────────────────────────────────────────────────────
+-- Stores CMS-editable contact page data (profile card, contact details,
+-- social links, availability). Each row is keyed by a slug.
+CREATE TABLE contact_info (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  key        text UNIQUE NOT NULL,
+  value      jsonb NOT NULL DEFAULT '{}',
+  updated_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE contact_info ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_read" ON contact_info FOR SELECT USING (true);
+CREATE POLICY "admin_all" ON contact_info FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE TRIGGER contact_info_updated_at
+  BEFORE UPDATE ON contact_info
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ─── INDEXES ────────────────────────────────────────────────────────────────
 CREATE INDEX idx_projects_slug ON projects(slug);

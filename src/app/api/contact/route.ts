@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getDataClient } from "@/lib/supabase/data-client";
+import { sendWhatsAppMessage } from "@/lib/services/whatsapp";
+import { getContactInfoData } from "@/lib/data/contact-info";
 
 const contactSchema = z.object({
   name: z.string().min(1).max(200),
@@ -21,8 +23,8 @@ async function verifyRecaptcha(token: string): Promise<boolean> {
     body: params,
   });
   if (!res.ok) return false;
-  const data = (await res.json()) as { success: boolean; score?: number };
-  return data.success && (data.score ?? 1) >= 0.5;
+  const data = (await res.json()) as { success: boolean };
+  return data.success === true;
 }
 
 export async function POST(req: NextRequest) {
@@ -50,9 +52,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Get contact info to check notification preferences
+    const contactInfo = await getContactInfoData();
     const brevoKey = process.env.BREVO_API_KEY;
 
-    // Persist to Supabase regardless of email provider
+    // Persist to Supabase regardless of notification provider
     const db = getDataClient();
     if (db) {
       await db.from("contact_submissions").insert({
@@ -63,7 +67,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (brevoKey) {
+    // Send email if enabled
+    if (contactInfo.notifications.email_enabled && brevoKey) {
       const subjectLine = subject
         ? `[misril.dev/${profile}] ${subject}`
         : `[misril.dev/${profile}] New message from ${name}`;
@@ -97,14 +102,22 @@ export async function POST(req: NextRequest) {
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         console.error("[contact] Brevo error:", errBody);
-        return NextResponse.json(
-          { error: "Failed to send message. Please try again later." },
-          { status: 502 }
-        );
+      }
+    } else if (!contactInfo.notifications.email_enabled) {
+      console.log("[contact] Email notifications disabled");
+    } else {
+      console.log("[contact] No BREVO_API_KEY configured");
+    }
+
+    // Send WhatsApp notification if enabled
+    if (contactInfo.notifications.whatsapp_enabled) {
+      const whatsappResult = await sendWhatsAppMessage(name, email, subject, message, profile);
+      if (!whatsappResult.success) {
+        console.warn("[contact] WhatsApp notification failed:", whatsappResult.error);
+        // Don't fail the request if WhatsApp fails
       }
     } else {
-      // No email provider configured — submission saved to Supabase only
-      console.log("[contact] No BREVO_API_KEY — saved to DB only:", { name, email, subject });
+      console.log("[contact] WhatsApp notifications disabled");
     }
 
     return NextResponse.json({ ok: true });

@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Copyrighted media — do not push to public repo
+public/tudum.mp3
+public/sounds/*.mp3
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

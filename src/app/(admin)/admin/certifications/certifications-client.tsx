@@ -3,8 +3,10 @@
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { openConfirm } from "@/components/ui/confirm-dialog";
 import { Pencil, Trash2, Plus, X } from "lucide-react";
 import type { Certification } from "@/lib/types/database";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { createCertification, updateCertification, deleteCertification, reorderCertifications } from "@/lib/actions/content";
 import { SortableList } from "@/components/admin/sortable-list";
 import { cn } from "@/lib/utils";
@@ -14,6 +16,8 @@ type FormValues = {
   provider: string;
   logo_url: string;
   date_earned: string;
+  date_expires: string;
+  short_description: string;
   verification_url: string;
   visible: boolean;
 };
@@ -22,12 +26,14 @@ const inputClass = "w-full bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] r
 
 function CertForm({ cert, onDone }: { cert?: Certification; onDone: () => void }) {
   const [isPending, startTransition] = useTransition();
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       title: cert?.title ?? "",
       provider: cert?.provider ?? "",
       logo_url: cert?.logo_url ?? "",
       date_earned: cert?.date_earned ?? "",
+      date_expires: cert?.date_expires ?? "",
+      short_description: cert?.short_description ?? "",
       verification_url: cert?.verification_url ?? "",
       visible: cert?.visible ?? true,
     },
@@ -39,6 +45,8 @@ function CertForm({ cert, onDone }: { cert?: Certification; onDone: () => void }
       provider: values.provider,
       logo_url: values.logo_url || null,
       date_earned: values.date_earned || null,
+      date_expires: values.date_expires || null,
+      short_description: values.short_description || null,
       verification_url: values.verification_url || null,
       visible: values.visible,
       display_order: cert?.display_order ?? 0,
@@ -70,14 +78,23 @@ function CertForm({ cert, onDone }: { cert?: Certification; onDone: () => void }
           <input {...register("date_earned")} type="date" className={inputClass} />
         </div>
         <div>
-          <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Verification URL</label>
-          <input {...register("verification_url")} type="url" className={inputClass} placeholder="https://…" />
+          <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Date Expires (Optional)</label>
+          <input {...register("date_expires")} type="date" className={inputClass} />
         </div>
       </div>
       <div>
-        <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Logo URL</label>
-        <input {...register("logo_url")} className={inputClass} placeholder="https://…" />
+        <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Short Description</label>
+        <textarea {...register("short_description")} rows={2} className={cn(inputClass, "resize-none")} placeholder="Brief details about the certification…" />
       </div>
+      <div>
+        <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Verification URL</label>
+        <input {...register("verification_url")} type="url" className={inputClass} placeholder="https://…" />
+      </div>
+      <ImageUploadField
+        label="Logo"
+        value={watch("logo_url")}
+        onChange={(url) => setValue("logo_url", url, { shouldDirty: true })}
+      />
       <label className="flex items-center gap-2 cursor-pointer">
         <input {...register("visible")} type="checkbox" className="accent-[#E50914]" />
         <span className="text-sm text-[#808080]">Visible</span>
@@ -96,8 +113,9 @@ export function CertificationsClient({ initialCerts }: { initialCerts: Certifica
   const [creating, setCreating] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function handleDelete(id: string) {
-    if (!confirm("Delete this certification?")) return;
+  async function handleDelete(id: string) {
+    const ok = await openConfirm("This certification will be permanently removed.", { title: "Delete certification?", confirmLabel: "Delete" });
+    if (!ok) return;
     startTransition(async () => {
       try { await deleteCertification(id); setCerts(prev => prev.filter(c => c.id !== id)); toast.success("Deleted"); }
       catch (err) { toast.error(err instanceof Error ? err.message : "Error"); }
@@ -120,6 +138,7 @@ export function CertificationsClient({ initialCerts }: { initialCerts: Certifica
         </div>
       )}
       <SortableList
+        listId="certifications"
         items={certs}
         onReorder={async (ids) => { try { await reorderCertifications(ids); } catch { toast.error("Reorder failed"); } }}
         renderItem={(cert) => (

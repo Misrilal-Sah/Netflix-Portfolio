@@ -50,12 +50,15 @@ interface SortableListProps<T extends { id: string }> {
   items: T[];
   onReorder: (orderedIds: string[]) => Promise<void>;
   renderItem: (item: T) => React.ReactNode;
+  /** Stable unique id passed to DndContext to prevent SSR/hydration mismatch */
+  listId: string;
 }
 
 export function SortableList<T extends { id: string }>({
   items,
   onReorder,
   renderItem,
+  listId,
 }: SortableListProps<T>) {
   const [localItems, setLocalItems] = useState(items);
   const sensors = useSensors(useSensor(PointerSensor));
@@ -73,6 +76,7 @@ export function SortableList<T extends { id: string }>({
 
   return (
     <DndContext
+      id={listId}
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}

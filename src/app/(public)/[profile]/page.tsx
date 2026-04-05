@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PROFILES, type ProfileType } from "@/lib/constants";
-import { getFeaturedProjects, getProjects, getSkills } from "@/lib/data";
+import { getHomepageHero, getHomepageCards, getHomepageProjectPicks } from "@/lib/data";
 import { ProfileHomeClient } from "./profile-home-client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
@@ -45,20 +45,23 @@ export default async function ProfileHomePage({
 }) {
   const { profile } = await params;
   const profileData = PROFILES[profile as ProfileType];
+  const profileType = profile as ProfileType;
 
-  const [featuredProjects, allProjects, skills] = await Promise.all([
-    getFeaturedProjects(),
-    getProjects(),
-    getSkills(),
+  const [hero, continueWatchingCards, topPicksCards, projectPicks] = await Promise.all([
+    getHomepageHero(profileType),
+    getHomepageCards(profileType, "continue_watching"),
+    getHomepageCards(profileType, "top_picks"),
+    getHomepageProjectPicks(profileType),
   ]);
 
   return (
     <ProfileHomeClient
-      profile={profile as ProfileType}
+      profile={profileType}
       profileName={profileData.displayName}
-      featuredProjects={featuredProjects}
-      allProjects={allProjects}
-      skills={skills}
+      hero={hero}
+      continueWatchingCards={continueWatchingCards}
+      topPicksCards={topPicksCards}
+      projectPicks={projectPicks}
     />
   );
 }

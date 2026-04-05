@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ContactSubmission } from "@/lib/types/database";
+import { getContactInfoData } from "@/lib/data";
 import { ContactSubmissionsClient } from "./contact-client";
 
 export default async function AdminContactPage() {
@@ -12,6 +13,9 @@ export default async function AdminContactPage() {
       .order("created_at", { ascending: false });
     submissions = (data as ContactSubmission[]) ?? [];
   } catch { /* no service key */ }
-  return <ContactSubmissionsClient initialSubmissions={submissions} />;
+
+  const contactInfo = await getContactInfoData();
+
+  return <ContactSubmissionsClient initialSubmissions={submissions} initialContactInfo={contactInfo} />;
 }
 

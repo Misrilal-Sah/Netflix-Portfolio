@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
 import { redirect } from "next/navigation";
 import { RecaptchaWrapper } from "./recaptcha-wrapper";
+import { getContactPageCopy } from "@/lib/data";
+import { getContactInfoData } from "@/lib/data/contact-info";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
@@ -39,6 +41,17 @@ export default async function ContactPage({
   }
 
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || undefined;
+  const [pageCopy, contactInfo] = await Promise.all([
+    getContactPageCopy(),
+    getContactInfoData(),
+  ]);
 
-  return <RecaptchaWrapper profile={profile as ProfileType} siteKey={siteKey} />;
+  return (
+    <RecaptchaWrapper
+      profile={profile as ProfileType}
+      copy={pageCopy[profile as ProfileType]}
+      contactInfo={contactInfo}
+      siteKey={siteKey}
+    />
+  );
 }

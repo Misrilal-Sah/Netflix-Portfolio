@@ -1,27 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Search, ChevronDown } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, PROFILES } from "@/lib/constants";
+import { NAV_ITEMS, PROFILES, PROFILE_TYPES } from "@/lib/constants";
 import { useScrollDirection } from "@/hooks/use-scroll-direction";
-import { useProfileContext } from "@/lib/contexts/profile-context";
 
 export function NetflixHeader() {
   const { isScrolled } = useScrollDirection();
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
-  let profile: string | null = null;
-  try {
-    const ctx = useProfileContext();
-    profile = ctx.profile;
-  } catch {}
+  // Clear pending state once real pathname matches
+  useEffect(() => {
+    if (pendingHref && pathname === pendingHref) {
+      setPendingHref(null);
+    }
+  }, [pathname, pendingHref]);
+
+  const profile =
+    (PROFILE_TYPES as readonly string[]).find(
+      (p) => pathname === `/${p}` || pathname.startsWith(`/${p}/`)
+    ) ?? null;
 
   const profileData = profile ? PROFILES[profile as keyof typeof PROFILES] : null;
+
+  // Hide the header entirely on the profile-selector (root) page
+  if (pathname === "/") return null;
+
+  function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    e.preventDefault();
+    if (href === pathname) return;
+    setPendingHref(href);
+    router.push(href);
+  }
 
   return (
     <>
@@ -36,21 +51,21 @@ export function NetflixHeader() {
         )}
       >
         <div className="flex items-center h-full px-[4vw] gap-6 lg:gap-8">
-          {/* Netflix-style red wordmark */}
+          {/* Netflix-style red logo */}
           <Link
             href="/"
             aria-label="Home"
-            className="shrink-0 flex items-center"
+            className="shrink-0 flex items-center h-10"
+            onClick={() => sessionStorage.removeItem("intro_seen")}
           >
-            <span
-              className="font-black text-accent tracking-[-0.02em] select-none"
-              style={{
-                fontSize: "clamp(20px, 2.2vw, 28px)",
-                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-              }}
-            >
-              MISRILAL SAH
-            </span>
+            <Image
+              src="/images/logo-2.png"
+              alt="Misrilal Sah"
+              width={160}
+              height={40}
+              className="h-full w-auto"
+              priority
+            />
           </Link>
 
           {/* ── Desktop nav links (hidden below md) ── */}
@@ -59,84 +74,51 @@ export function NetflixHeader() {
               NAV_ITEMS.map((item) => {
                 const href = item.path ? `/${profile}/${item.path}` : `/${profile}`;
                 const isActive =
-                  pathname === href ||
-                  (item.path && pathname.startsWith(href + "/"));
+                  pendingHref === href ||
+                  (!pendingHref && (pathname === href || (item.path && pathname.startsWith(href + "/"))));
+                const isPending = pendingHref === href;
                 return (
-                  <Link
+                  <a
                     key={item.label}
                     href={href}
+                    onClick={(e) => handleNavClick(e, href)}
                     className={cn(
-                      "text-sm font-medium transition-colors whitespace-nowrap",
-                      isActive ? "text-white font-semibold" : "text-white/70 hover:text-white"
+                      "text-sm font-medium transition-colors whitespace-nowrap relative pb-1",
+                      isActive
+                        ? "text-white"
+                        : "text-white/70 hover:text-white"
                     )}
                   >
                     {item.label}
-                  </Link>
+                    {isActive && (
+                      <span
+                        className={cn(
+                          "absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full",
+                          isPending ? "opacity-60" : "animate-expand-center"
+                        )}
+                      />
+                    )}
+                  </a>
                 );
               })}
           </nav>
 
           {/* ── Right icons ── */}
           <div className="ml-auto flex items-center gap-3 shrink-0">
-            {/* Search icon */}
-            <button aria-label="Search" className="text-white/80 hover:text-white transition-colors hidden sm:flex">
-              <Search size={20} />
-            </button>
-
-            {/* Bell */}
-            <button aria-label="Notifications" className="relative text-white/80 hover:text-white transition-colors hidden sm:flex">
-              <Bell size={20} />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full" />
-            </button>
-
-            {/* Resume */}
-            <a
-              href="/files/Misrilal_Sah_Resume.pdf"
-              download
-              className="hidden lg:inline-flex items-center px-3 py-1 rounded border border-white/30 text-white/80 hover:text-white hover:border-white text-xs font-semibold tracking-widest uppercase transition-colors"
-            >
-              Resume
-            </a>
-
-            {/* Profile avatar + dropdown */}
+            {/* Profile avatar — click to go home and select profile */}
             {profileData && (
-              <button
-                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              <Link
+                href="/"
                 className="flex items-center gap-1 group"
-                aria-label="Profile menu"
+                aria-label="Switch profile"
               >
-                <div className="w-8 h-8 rounded-md overflow-hidden relative border-2 border-transparent group-hover:border-white transition-colors">
+                <div className="w-10 h-10 rounded-full overflow-hidden relative border-2 border-transparent group-hover:border-white transition-colors">
                   <Image src={profileData.avatarImage} alt={profileData.displayName} fill className="object-cover" sizes="32px" />
                 </div>
-                <ChevronDown
-                  size={14}
-                  className={cn("text-white/70 transition-transform duration-200", profileMenuOpen && "rotate-180")}
-                />
-              </button>
+              </Link>
             )}
           </div>
         </div>
-
-        {/* Profile dropdown */}
-        {profileMenuOpen && profileData && (
-          <div className="absolute right-[4vw] top-[72px] w-48 bg-[rgba(20,20,20,0.97)] border border-white/10 rounded-md shadow-2xl overflow-hidden z-50">
-            <Link
-              href="/"
-              onClick={() => setProfileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-sm text-white/80 hover:text-white"
-            >
-              Switch Profile
-            </Link>
-            <a
-              href="/files/Misrilal_Sah_Resume.pdf"
-              download
-              onClick={() => setProfileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-sm text-white/80 hover:text-white border-t border-white/10"
-            >
-              Download Resume
-            </a>
-          </div>
-        )}
       </header>
 
       {/* ── Mobile Bottom Tab Bar (visible below md) ── */}
@@ -152,12 +134,13 @@ export function NetflixHeader() {
           {NAV_ITEMS.map((item) => {
             const href = item.path ? `/${profile}/${item.path}` : `/${profile}`;
             const isActive =
-              pathname === href ||
-              (item.path && pathname.startsWith(href + "/"));
+              pendingHref === href ||
+              (!pendingHref && (pathname === href || (item.path && pathname.startsWith(href + "/"))));
             return (
-              <Link
+              <a
                 key={item.label}
                 href={href}
+                onClick={(e) => handleNavClick(e, href)}
                 className={cn(
                   "flex-1 flex items-center justify-center",
                   "text-[10px] font-medium transition-colors py-1",
@@ -165,7 +148,7 @@ export function NetflixHeader() {
                 )}
               >
                 <span className="truncate px-0.5">{item.label}</span>
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -173,16 +156,3 @@ export function NetflixHeader() {
     </>
   );
 }
-
-  // Try to get profile from context, fallback to null (e.g., on landing page)
-  let profile: string | null = null;
-  try {
-    const ctx = useProfileContext();
-    profile = ctx.profile;
-  } catch {
-    // Not inside ProfileProvider — on landing page
-  }
-
-  const profileData = profile
-    ? PROFILES[profile as keyof typeof PROFILES]
-    : null;

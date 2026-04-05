@@ -6,7 +6,7 @@ export default async function AdminExperiencePage() {
   let experience: Experience[] = [];
   try {
     const db = createAdminClient();
-    const { data } = await db.from("experience").select("*").order("start_date", { ascending: false });
+    const { data } = await db.from("experience").select("*").order("display_order", { ascending: true });
     experience = (data as Experience[]) ?? [];
   } catch { /* no service key */ }
   return <ExperienceClient initialExperience={experience} />;

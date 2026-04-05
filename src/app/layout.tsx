@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import { Bebas_Neue } from "next/font/google";
 import "./globals.css";
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Misril.dev — Developer Portfolio",
@@ -49,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-bg text-text">
+    <html lang="en" className={`bg-bg text-text ${bebasNeue.variable}`}>
       <body className="font-sans min-h-screen antialiased">
         <script
           type="application/ld+json"

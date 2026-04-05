@@ -2,6 +2,22 @@ import type { AboutSection } from "@/lib/types/database";
 import type { ProfileType } from "@/lib/constants";
 import { getDataClient } from "@/lib/supabase/data-client";
 
+export type AboutSkillsConfig = {
+  categoryOrder: string[];
+  skillsByCategory: Record<string, string[]>;
+};
+
+const defaultAboutSkillsConfig: AboutSkillsConfig = {
+  categoryOrder: ["Frontend", "Backend", "Database", "DevOps", "Tools"],
+  skillsByCategory: {
+    Frontend: ["JavaScript", "TypeScript", "React", "Next.js", "Vue.js", "Tailwind CSS", "HTML5 / CSS3", "Framer Motion"],
+    Backend: ["Node.js", "Python", "PHP / Laravel", "FastAPI"],
+    Database: ["PostgreSQL", "MySQL", "MongoDB", "Supabase"],
+    DevOps: ["Docker", "Git / GitHub", "Vercel", "AWS"],
+    Tools: ["VS Code", "Figma", "Postman"],
+  },
+};
+
 const aboutSections: AboutSection[] = [
   {
     id: "a-001",
@@ -38,7 +54,7 @@ const aboutSections: AboutSection[] = [
   },
 ];
 
-const profileBioVariants: Record<ProfileType, string> = {
+export const profileBioVariants: Record<ProfileType, string> = {
   recruiter:
     "Experienced Full Stack Developer with 2+ years at Ciklum India. Proficient in React, Next.js, TypeScript, Node.js, Laravel, and PostgreSQL. Delivered production applications including Stripe integrations, AI-powered tools, and chrome extensions. B.E. Computer Engineering, Mumbai University (CGPA 8.7/10).",
   developer:
@@ -85,4 +101,49 @@ export async function getAboutContent(
     : profileBioVariants.recruiter;
 
   return { sections, bio: bio ?? fallbackBio };
+}
+
+// ─── About Hero ───────────────────────────────────────────────────────────────
+
+export type AboutHero = {
+  image_url: string;
+  stats: Array<{ value: string; label: string }>;
+};
+
+const defaultAboutHero: AboutHero = {
+  image_url: "/others/misril.png",
+  stats: [
+    { value: "2+", label: "Years Experience" },
+    { value: "25+", label: "GitHub Projects" },
+    { value: "8.7", label: "B.E. CGPA" },
+    { value: "7", label: "Certifications" },
+  ],
+};
+
+export async function getAboutHero(): Promise<AboutHero> {
+  const db = getDataClient();
+  if (db) {
+    const { data } = await db
+      .from("site_settings")
+      .select("value")
+      .eq("key", "about_hero")
+      .maybeSingle();
+    if (data?.value) return data.value as AboutHero;
+  }
+  return defaultAboutHero;
+}
+
+export const DEFAULT_ABOUT_HERO = defaultAboutHero;
+
+export async function getAboutSkillsConfig(): Promise<AboutSkillsConfig> {
+  const db = getDataClient();
+  if (db) {
+    const { data } = await db
+      .from("site_settings")
+      .select("value")
+      .eq("key", "about_skills")
+      .maybeSingle();
+    if (data?.value) return data.value as AboutSkillsConfig;
+  }
+  return defaultAboutSkillsConfig;
 }

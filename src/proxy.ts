@@ -30,6 +30,7 @@ export async function proxy(request: NextRequest) {
     !profileSegment.startsWith("api") &&
     !profileSegment.startsWith("admin") &&
     !profileSegment.startsWith("images") &&
+    !profileSegment.startsWith("sounds") &&
     profileSegment !== "favicon.ico" &&
     !profileSegment.includes(".") // skip file paths like sitemap.xml, robots.txt
   ) {

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
-import { getSkills } from "@/lib/data";
+import { getSkills, getSkillsPageCopy } from "@/lib/data";
 import { redirect } from "next/navigation";
 import type { Skill } from "@/lib/types/database";
+import { getSkillIcon } from "@/lib/skill-icons";
+import { Code2 } from "lucide-react";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
@@ -28,26 +30,7 @@ export function generateMetadata(): Metadata {
   };
 }
 
-const PROFILE_COPY: Record<ProfileType, { title: string; subtitle: string }> =
-  {
-    recruiter: {
-      title: "Core Competencies",
-      subtitle: "Technologies in active production use — no padding.",
-    },
-    developer: {
-      title: "Tech Inventory",
-      subtitle: "The full stack, honestly rated. Click any to know how deep.",
-    },
-    stalker: {
-      title: "What I Actually Know",
-      subtitle: "No fluff. No \"familiar with\". This is real.",
-    },
-    adventurer: {
-      title: "Unlocked Abilities",
-      subtitle:
-        "Skills forged through quests, side projects, and late nights.",
-    },
-  };
+
 
 const CATEGORY_ORDER = [
   "Frontend",
@@ -58,16 +41,32 @@ const CATEGORY_ORDER = [
 ] as const;
 
 function SkillBadge({ skill }: { skill: Skill }) {
+  const icon = getSkillIcon(skill.name);
+
   return (
-    <div className="group relative bg-surface border border-border rounded-md px-md py-sm hover:border-text-dim hover:bg-surface-hover transition-colors cursor-default">
-      <p className="text-[length:var(--font-size-body)] font-bold text-text">
-        {skill.name}
-      </p>
-      {skill.description && (
-        <p className="mt-xs text-[10px] text-text-muted leading-snug">
-          {skill.description}
-        </p>
-      )}
+    <div className="group relative bg-surface border border-border rounded-xl p-4 cursor-default flex flex-col items-center text-center gap-3 hover:border-accent hover:shadow-[0_0_20px_rgba(229,9,20,0.25)] hover:scale-[1.12] hover:-translate-y-3 hover:z-10 transition-all duration-500 ease-out">
+      <div className="w-12 h-12 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center flex-shrink-0">
+        {icon ? (
+          <svg
+            viewBox="0 0 24 24"
+            className="w-7 h-7"
+            style={{ fill: `#${icon.hex}` }}
+            aria-hidden="true"
+          >
+            <path d={icon.path} />
+          </svg>
+        ) : (
+          <Code2 size={26} className="text-accent" aria-hidden="true" />
+        )}
+      </div>
+      <div>
+        <p className="text-sm font-bold text-text leading-tight">{skill.name}</p>
+        {skill.description && (
+          <p className="mt-1 text-[10px] text-text-muted leading-snug">
+            {skill.description}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -83,8 +82,8 @@ export default async function SkillsPage({
     redirect("/");
   }
 
-  const skills = await getSkills();
-  const copy = PROFILE_COPY[profile as ProfileType];
+  const [skills, pageCopy] = await Promise.all([getSkills(), getSkillsPageCopy()]);
+  const copy = pageCopy[profile as ProfileType];
 
   // Group by category
   const grouped = CATEGORY_ORDER.reduce(
@@ -110,14 +109,14 @@ export default async function SkillsPage({
   const allGroups = { ...grouped, ...extra };
 
   return (
-    <div className="min-h-screen bg-bg pb-3xl">
+    <div className="min-h-screen bg-bg pb-2xl">
       {/* Page Header */}
       <div className="pt-12 lg:pt-[68px]">
-        <div className="px-[4vw] py-2xl">
+        <div className="px-[4vw] py-lg">
           <h1 className="text-[length:var(--font-size-display)] font-bold text-text">
             {copy.title}
           </h1>
-          <p className="mt-sm text-[length:var(--font-size-heading)] text-text-muted max-w-2xl">
+          <p className="mt-2 text-base text-text-muted w-full">
             {copy.subtitle}
           </p>
         </div>
@@ -130,7 +129,7 @@ export default async function SkillsPage({
             <h2 className="text-[length:var(--font-size-body)] font-bold tracking-[0.1em] uppercase text-text-muted mb-lg border-b border-border pb-sm">
               {category}
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-sm">
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3">
               {catSkills.map((skill) => (
                 <SkillBadge key={skill.id} skill={skill} />
               ))}

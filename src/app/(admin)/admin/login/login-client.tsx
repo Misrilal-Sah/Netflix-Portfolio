@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +10,7 @@ export function LoginClient() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,7 +36,7 @@ export function LoginClient() {
 
   return (
     <div className="min-h-screen bg-[#141414] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full mx-auto" style={{ maxWidth: "420px" }}>
         {/* Logo */}
         <div className="text-center mb-8">
           <span className="text-[#E50914] font-bold text-4xl tracking-tight">M</span>
@@ -57,8 +59,9 @@ export function LoginClient() {
               type="email"
               required
               autoComplete="email"
+              placeholder="you@example.com"
               disabled={loading}
-              className="bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-3 py-2.5 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors disabled:opacity-50"
+              className="w-full bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-3 py-2.5 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors disabled:opacity-50"
             />
           </div>
 
@@ -66,15 +69,27 @@ export function LoginClient() {
             <label htmlFor="password" className="text-[#808080] text-xs font-bold uppercase tracking-widest">
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              disabled={loading}
-              className="bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-3 py-2.5 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors disabled:opacity-50"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                disabled={loading}
+                className="w-full bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-3 py-2.5 pr-10 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#808080] hover:text-white transition-colors disabled:opacity-50 disabled:hover:text-[#808080]"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
           {error && (

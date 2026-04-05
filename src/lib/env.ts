@@ -6,6 +6,7 @@ const publicSchema = z.object({
   NEXT_PUBLIC_RECAPTCHA_SITE_KEY: z.string().optional(),
   NEXT_PUBLIC_SITE_URL: z.string().min(1),
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1),
+  NEXT_PUBLIC_TUDUM_URL: z.string().optional(),
 });
 
 const serverSchema = z.object({
@@ -24,6 +25,7 @@ const processEnv = {
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://misril.dev",
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
     process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "ddrlxvnsh",
+  NEXT_PUBLIC_TUDUM_URL: process.env.NEXT_PUBLIC_TUDUM_URL ?? "",
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   BREVO_API_KEY: process.env.BREVO_API_KEY ?? "",
   RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY ?? "",

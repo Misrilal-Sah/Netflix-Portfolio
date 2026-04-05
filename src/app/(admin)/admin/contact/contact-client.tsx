@@ -2,9 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Mail, MailOpen, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { openConfirm } from "@/components/ui/confirm-dialog";
+import { Mail, MailOpen, Trash2, ChevronDown, ChevronUp, Plus, Minus, Save } from "lucide-react";
 import type { ContactSubmission } from "@/lib/types/database";
-import { markSubmissionRead, deleteSubmission } from "@/lib/actions/admin";
+import type { ContactInfoData, SocialLink } from "@/lib/data/contact-info";
+import { markSubmissionRead, deleteSubmission, upsertContactInfoKey } from "@/lib/actions/admin";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { cn } from "@/lib/utils";
 
 function formatDate(iso: string) {
@@ -109,7 +112,14 @@ function SubmissionRow({ sub, onToggleRead, onDelete }: {
   );
 }
 
-export function ContactSubmissionsClient({ initialSubmissions }: { initialSubmissions: ContactSubmission[] }) {
+export function ContactSubmissionsClient({
+  initialSubmissions,
+  initialContactInfo,
+}: {
+  initialSubmissions: ContactSubmission[];
+  initialContactInfo: ContactInfoData;
+}) {
+  const [activeTab, setActiveTab] = useState<"messages" | "settings">("messages");
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
   const [isPending, startTransition] = useTransition();
@@ -127,8 +137,9 @@ export function ContactSubmissionsClient({ initialSubmissions }: { initialSubmis
     setSubmissions((prev) => prev.map((s) => s.id === id ? { ...s, is_read: read } : s));
   }
 
-  function handleDelete(id: string) {
-    if (!confirm("Delete this message?")) return;
+  async function handleDelete(id: string) {
+    const ok = await openConfirm("This message will be permanently deleted.", { title: "Delete message?", confirmLabel: "Delete" });
+    if (!ok) return;
     startTransition(async () => {
       try {
         await deleteSubmission(id);
@@ -140,42 +151,232 @@ export function ContactSubmissionsClient({ initialSubmissions }: { initialSubmis
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[#808080] text-sm font-bold uppercase tracking-widest">
-          {submissions.length} Messages{unreadCount > 0 && ` · ${unreadCount} unread`}
-        </h2>
-        <div className="flex gap-1">
-          {(["all", "unread", "read"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-bold rounded-sm transition-colors uppercase tracking-wider",
-                filter === f ? "bg-[#E50914] text-white" : "text-[#555] hover:text-white"
-              )}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-[rgba(255,255,255,0.08)]">
+        <button
+          onClick={() => setActiveTab("messages")}
+          className={cn("px-4 py-2 text-sm font-bold transition-colors border-b-2 -mb-px", activeTab === "messages" ? "border-[#E50914] text-white" : "border-transparent text-[#555] hover:text-white")}
+        >
+          Messages{unreadCount > 0 && <span className="ml-1.5 bg-[#E50914] text-white text-xs px-1.5 py-0.5 rounded-full">{unreadCount}</span>}
+        </button>
+        <button
+          onClick={() => setActiveTab("settings")}
+          className={cn("px-4 py-2 text-sm font-bold transition-colors border-b-2 -mb-px", activeTab === "settings" ? "border-[#E50914] text-white" : "border-transparent text-[#555] hover:text-white")}
+        >
+          Page Settings
+        </button>
       </div>
 
-      <div className="space-y-2">
-        {filtered.map((sub) => (
-          <SubmissionRow
-            key={sub.id}
-            sub={sub}
-            onToggleRead={handleToggleRead}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {activeTab === "messages" && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[#808080] text-sm font-bold uppercase tracking-widest">
+              {submissions.length} Messages{unreadCount > 0 && ` · ${unreadCount} unread`}
+            </h2>
+            <div className="flex gap-1">
+              {(["all", "unread", "read"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs font-bold rounded-sm transition-colors uppercase tracking-wider",
+                    filter === f ? "bg-[#E50914] text-white" : "text-[#555] hover:text-white"
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-16 text-[#555] text-sm">
-          {filter === "unread" ? "No unread messages." : filter === "read" ? "No read messages." : "No messages yet."}
-        </div>
+          <div className="space-y-2">
+            {filtered.map((sub) => (
+              <SubmissionRow
+                key={sub.id}
+                sub={sub}
+                onToggleRead={handleToggleRead}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-16 text-[#555] text-sm">
+              {filter === "unread" ? "No unread messages." : filter === "read" ? "No read messages." : "No messages yet."}
+            </div>
+          )}
+        </>
       )}
+
+      {activeTab === "settings" && (
+        <ContactInfoCMS initialContactInfo={initialContactInfo} />
+      )}
+    </div>
+  );
+}
+
+// ─── Contact Info CMS ─────────────────────────────────────────────────────────
+
+const inputCls = "w-full bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-3 py-2 text-white text-sm placeholder:text-[#555] focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors";
+
+function ContactInfoCMS({ initialContactInfo }: { initialContactInfo: ContactInfoData }) {
+  const [info, setInfo] = useState<ContactInfoData>(initialContactInfo);
+  const [links, setLinks] = useState<SocialLink[]>(initialContactInfo.social_links);
+  const [isPending, startTransition] = useTransition();
+
+  function saveSection(key: keyof ContactInfoData, value: unknown) {
+    startTransition(async () => {
+      try {
+        await upsertContactInfoKey(key, value as Record<string, unknown>);
+        toast.success("Saved");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Error saving");
+      }
+    });
+  }
+
+  function updateField<K extends keyof ContactInfoData>(
+    section: K,
+    field: string,
+    value: string | boolean
+  ) {
+    setInfo((prev) => ({
+      ...prev,
+      [section]: { ...(prev[section] as object), [field]: value },
+    }));
+  }
+
+  function addLink() {
+    setLinks((prev) => [...prev, { name: "", url: "", bg_color: "#333333" }]);
+  }
+
+  function removeLink(i: number) {
+    setLinks((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function updateLink(i: number, field: keyof SocialLink, value: string) {
+    setLinks((prev) => prev.map((l, idx) => idx === i ? { ...l, [field]: value } : l));
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Profile Card */}
+      <Section title="Profile Card" onSave={() => saveSection("profile_card", info.profile_card)} isPending={isPending}>
+        {(["name", "job_title", "bio", "location", "linkedin_url"] as const).map((field) => (
+          <Field key={field} label={field.replace(/_/g, " ")} value={String(info.profile_card[field] ?? "")} onChange={(v) => updateField("profile_card", field, v)} />
+        ))}
+        <ImageUploadField
+          label="Photo"
+          value={String(info.profile_card.photo_url ?? "")}
+          onChange={(v) => updateField("profile_card", "photo_url", v)}
+        />
+      </Section>
+
+      {/* Contact Details */}
+      <Section title="Contact Details" onSave={() => saveSection("contact_details", info.contact_details)} isPending={isPending}>
+        {(["email", "phone", "location"] as const).map((field) => (
+          <Field key={field} label={field} value={String(info.contact_details[field] ?? "")} onChange={(v) => updateField("contact_details", field, v)} />
+        ))}
+      </Section>
+
+      {/* Social Links */}
+      <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-md p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-bold">Social Links</h3>
+          <div className="flex gap-2">
+            <button onClick={addLink} className="flex items-center gap-1 px-3 py-1.5 bg-[#333] hover:bg-[#444] text-white text-xs font-bold rounded-sm transition-colors">
+              <Plus size={12} /> Add
+            </button>
+            <button onClick={() => saveSection("social_links", links)} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#E50914] hover:bg-[#f40d1a] disabled:opacity-40 text-white font-bold text-sm rounded-sm transition-colors">
+              <Save size={14} /> {isPending ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+        {links.map((link, i) => (
+          <div key={i} className="border border-[rgba(255,255,255,0.06)] rounded-sm p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[#808080] text-xs font-bold uppercase tracking-wider">Link {i + 1}</span>
+              <button onClick={() => removeLink(i)} className="text-[#555] hover:text-[#E50914] transition-colors"><Minus size={14} /></button>
+            </div>
+            <Field label="Name (e.g. LinkedIn, GitHub)" value={link.name} onChange={(v) => updateLink(i, "name", v)} />
+            <Field label="URL" value={link.url} onChange={(v) => updateLink(i, "url", v)} />
+            <div>
+              <label className="block text-[#555] text-xs mb-1">Background Color</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={link.bg_color} onChange={(e) => updateLink(i, "bg_color", e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent p-0" />
+                <input value={link.bg_color} onChange={(e) => updateLink(i, "bg_color", e.target.value)} placeholder="#333333" className={cn(inputCls, "flex-1 font-mono text-xs")} />
+              </div>
+            </div>
+          </div>
+        ))}
+        {links.length === 0 && <p className="text-[#555] text-sm text-center py-4">No social links. Click Add to create one.</p>}
+      </div>
+
+      {/* Availability */}
+      <Section title="Availability" onSave={() => saveSection("availability", info.availability)} isPending={isPending}>
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="is_available"
+            checked={info.availability.is_available}
+            onChange={(e) => updateField("availability", "is_available", e.target.checked)}
+            className="w-4 h-4 accent-[#E50914]"
+          />
+          <label htmlFor="is_available" className="text-[#808080] text-xs font-bold uppercase tracking-wider">Available for Work</label>
+        </div>
+        <Field label="Status Text" value={info.availability.status_text} onChange={(v) => updateField("availability", "status_text", v)} />
+        <Field label="Response Time" value={info.availability.response_time} onChange={(v) => updateField("availability", "response_time", v)} />
+      </Section>
+
+      {/* Notifications */}
+      <Section title="Notifications" onSave={() => saveSection("notifications", info.notifications)} isPending={isPending}>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="email_enabled"
+              checked={info.notifications.email_enabled}
+              onChange={(e) => updateField("notifications", "email_enabled", e.target.checked)}
+              className="w-4 h-4 accent-[#E50914]"
+            />
+            <label htmlFor="email_enabled" className="text-[#808080] text-xs font-bold uppercase tracking-wider">Email Notifications</label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="whatsapp_enabled"
+              checked={info.notifications.whatsapp_enabled}
+              onChange={(e) => updateField("notifications", "whatsapp_enabled", e.target.checked)}
+              className="w-4 h-4 accent-[#E50914]"
+            />
+            <label htmlFor="whatsapp_enabled" className="text-[#808080] text-xs font-bold uppercase tracking-wider">WhatsApp Notifications</label>
+          </div>
+          <p className="text-[#555] text-xs mt-2">Messages will be sent to: {info.contact_details.phone}</p>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, onSave, isPending, children }: { title: string; onSave: () => void; isPending: boolean; children: React.ReactNode }) {
+  return (
+    <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-md p-5 space-y-3">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-white font-bold">{title}</h3>
+        <button onClick={onSave} disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#E50914] hover:bg-[#f40d1a] disabled:opacity-40 text-white font-bold text-sm rounded-sm transition-colors">
+          <Save size={14} /> {isPending ? "Saving…" : "Save"}
+        </button>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="block text-[#555] text-xs mb-1 capitalize">{label}</label>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} />
     </div>
   );
 }

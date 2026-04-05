@@ -13,12 +13,14 @@ import {
   Settings,
   LogOut,
   ExternalLink,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
+  { label: "Homepage", path: "/admin/homepage", icon: Home },
   { label: "Projects", path: "/admin/projects", icon: FolderKanban },
   { label: "Skills", path: "/admin/skills", icon: Wrench },
   { label: "Certifications", path: "/admin/certifications", icon: Award },

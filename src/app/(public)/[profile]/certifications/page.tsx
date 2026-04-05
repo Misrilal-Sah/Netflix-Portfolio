@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { PROFILE_TYPES, type ProfileType } from "@/lib/constants";
-import { getCertifications } from "@/lib/data";
+import { getCertifications, getCertificationsPageCopy } from "@/lib/data";
+import { getProviderInfo } from "@/lib/provider-icons";
 import { redirect } from "next/navigation";
 import type { Certification } from "@/lib/types/database";
 
@@ -29,66 +31,97 @@ export function generateMetadata(): Metadata {
 }
 import { ExternalLink, Award } from "lucide-react";
 
-const PROFILE_COPY: Record<ProfileType, { title: string; subtitle: string }> =
-  {
-    recruiter: {
-      title: "Credentials & Training",
-      subtitle: "Validated skills with official recognition.",
-    },
-    developer: {
-      title: "Certs & Courses",
-      subtitle:
-        "Formal training alongside the self-taught grind — because both matter.",
-    },
-    stalker: {
-      title: "Paper Trail",
-      subtitle: "The receipts. Every single one.",
-    },
-    adventurer: {
-      title: "Achievement Unlocked",
-      subtitle: "Rare drops from the learning dungeon.",
-    },
-  };
+
+
+function ProviderLogo({ logo, provider }: { logo: string; provider: string }) {
+  if (logo.startsWith("data:")) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={logo} alt={provider} className="w-6 h-6 object-contain" />
+    );
+  }
+  return (
+    <Image
+      src={logo}
+      alt={provider}
+      width={24}
+      height={24}
+      className="w-6 h-6 object-contain"
+    />
+  );
+}
 
 function CertCard({ cert }: { cert: Certification }) {
-  const dateStr = cert.date_earned
+  const issuedStr = cert.date_earned
     ? new Date(cert.date_earned).toLocaleDateString("en-US", {
-        month: "long",
+        month: "short",
         year: "numeric",
       })
     : null;
 
-  return (
-    <div className="bg-surface border border-border rounded-md p-xl flex flex-col gap-sm hover:border-text-dim transition-colors">
-      <div className="w-10 h-10 rounded-md bg-surface-hover flex items-center justify-center flex-shrink-0">
-        <Award size={20} className="text-accent" />
+  const expiresStr = cert.date_expires
+    ? new Date(cert.date_expires).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
+  const dateRangeStr = expiresStr ? `${issuedStr} – ${expiresStr}` : issuedStr;
+
+  const providerInfo = getProviderInfo(cert.provider);
+
+  const cardContent = (
+    <div className="group relative bg-surface border border-border rounded-md p-xl flex flex-col gap-sm h-full hover:border-accent hover:shadow-[0_0_24px_rgba(229,9,20,0.35)] hover:scale-[1.05] hover:-translate-y-2 hover:z-10 transition-all duration-500 ease-out cursor-pointer">
+      {/* External link icon — top right */}
+      <ExternalLink
+        size={14}
+        className="absolute top-3 right-3 text-text-muted group-hover:text-accent transition-colors"
+      />
+
+      {/* Provider logo */}
+      <div className="w-10 h-10 rounded-md bg-surface-hover flex items-center justify-center flex-shrink-0 overflow-hidden">
+        {providerInfo?.logo ? (
+          <ProviderLogo logo={providerInfo.logo} provider={cert.provider} />
+        ) : (
+          <Award size={20} className="text-accent" />
+        )}
       </div>
-      <div className="flex-1">
+
+      <div className="flex-1 pr-4">
         <h3 className="text-[length:var(--font-size-body)] font-bold text-text leading-snug">
           {cert.title}
         </h3>
-        <p className="mt-xs text-[length:var(--font-size-body)] text-accent font-bold">
+        <p className="mt-xs text-[length:var(--font-size-body)] text-accent font-medium">
           {cert.provider}
         </p>
-        {dateStr && (
+        {cert.short_description && (
+          <p className="mt-xs text-xs text-text-muted leading-snug">
+            {cert.short_description}
+          </p>
+        )}
+        {dateRangeStr && (
           <p className="mt-xs text-[length:var(--font-size-body)] text-text-muted">
-            {dateStr}
+            Issued {dateRangeStr}
           </p>
         )}
       </div>
-      {cert.verification_url && (
-        <a
-          href={cert.verification_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-xs text-[length:var(--font-size-body)] text-text-muted hover:text-text transition-colors mt-auto"
-        >
-          <ExternalLink size={12} />
-          Verify
-        </a>
-      )}
     </div>
   );
+
+  if (cert.verification_url) {
+    return (
+      <a
+        href={cert.verification_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md"
+      >
+        {cardContent}
+      </a>
+    );
+  }
+
+  return <div className="h-full">{cardContent}</div>;
 }
 
 export default async function CertificationsPage({
@@ -102,25 +135,25 @@ export default async function CertificationsPage({
     redirect("/");
   }
 
-  const certs = await getCertifications();
-  const copy = PROFILE_COPY[profile as ProfileType];
+  const [certs, pageCopy] = await Promise.all([getCertifications(), getCertificationsPageCopy()]);
+  const copy = pageCopy[profile as ProfileType];
 
   return (
-    <div className="min-h-screen bg-bg pb-3xl">
+    <div className="min-h-screen bg-bg pb-2xl">
       {/* Page Header */}
       <div className="pt-12 lg:pt-[68px]">
-        <div className="px-[4vw] py-2xl">
+        <div className="px-[4vw] py-lg">
           <h1 className="text-[length:var(--font-size-display)] font-bold text-text">
             {copy.title}
           </h1>
-          <p className="mt-sm text-[length:var(--font-size-heading)] text-text-muted max-w-2xl">
+          <p className="mt-2 text-base text-text-muted w-full">
             {copy.subtitle}
           </p>
         </div>
       </div>
 
       {/* Certs Grid */}
-      <div className="px-[4vw] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
+      <div className="px-[4vw] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md auto-rows-fr">
         {certs.map((cert) => (
           <CertCard key={cert.id} cert={cert} />
         ))}

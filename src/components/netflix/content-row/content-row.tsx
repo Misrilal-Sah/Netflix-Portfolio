@@ -9,8 +9,8 @@ interface ContentRowProps {
 
 export function ContentRow({ title, children, isEmpty }: ContentRowProps) {
   return (
-    <section className="py-xl">
-      <h2 className="text-[length:var(--font-size-body)] font-bold tracking-[0.05em] text-text mb-md px-[4vw]">
+    <section className="py-sm">
+      <h2 className="text-[20px] sm:text-[24px] font-bold tracking-[0.05em] text-text mb-md px-[4vw]">
         {title}
       </h2>
       {isEmpty ? (
