@@ -31,7 +31,7 @@ export async function deleteSubmission(id: string) {
 export async function updateAboutSection(id: string, data: AboutSectionUpdate) {
   const db = createAdminClient();
   if ("image_url" in data) {
-    const { data: old } = await db.from("about_sections").select("image_url").eq("id", id).single();
+    const { data: old } = (await db.from("about_sections").select("image_url").eq("id", id).single()) as unknown as { data: { image_url: string | null } | null };
     if (old?.image_url !== data.image_url) {
       await deleteStorageFiles([old?.image_url]);
     }
@@ -44,7 +44,7 @@ export async function updateAboutSection(id: string, data: AboutSectionUpdate) {
 
 export async function deleteAboutSection(id: string) {
   const db = createAdminClient();
-  const { data: record } = await db.from("about_sections").select("image_url").eq("id", id).single();
+  const { data: record } = (await db.from("about_sections").select("image_url").eq("id", id).single()) as unknown as { data: { image_url: string | null } | null };
   const { error } = await db.from("about_sections").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await deleteStorageFiles([record?.image_url]);

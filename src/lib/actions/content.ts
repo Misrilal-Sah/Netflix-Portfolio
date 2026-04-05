@@ -18,7 +18,7 @@ export async function createProject(data: ProjectInsert) {
 export async function updateProject(id: string, data: ProjectUpdate) {
   const db = createAdminClient();
   if ("screenshot_url" in data) {
-    const { data: old } = await db.from("projects").select("screenshot_url").eq("id", id).single();
+    const { data: old } = (await db.from("projects").select("screenshot_url").eq("id", id).single()) as unknown as { data: { screenshot_url: string | null } | null };
     if (old?.screenshot_url !== data.screenshot_url) {
       await deleteStorageFiles([old?.screenshot_url]);
     }
@@ -31,7 +31,7 @@ export async function updateProject(id: string, data: ProjectUpdate) {
 
 export async function deleteProject(id: string) {
   const db = createAdminClient();
-  const { data: record } = await db.from("projects").select("screenshot_url").eq("id", id).single();
+  const { data: record } = (await db.from("projects").select("screenshot_url").eq("id", id).single()) as unknown as { data: { screenshot_url: string | null } | null };
   const { error } = await db.from("projects").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await deleteStorageFiles([record?.screenshot_url]);
@@ -170,7 +170,7 @@ export async function createSkill(data: SkillInsert) {
 export async function updateSkill(id: string, data: SkillUpdate) {
   const db = createAdminClient();
   if ("icon_url" in data) {
-    const { data: old } = await db.from("skills").select("icon_url").eq("id", id).single();
+    const { data: old } = (await db.from("skills").select("icon_url").eq("id", id).single()) as unknown as { data: { icon_url: string | null } | null };
     if (old?.icon_url !== data.icon_url) {
       await deleteStorageFiles([old?.icon_url]);
     }
@@ -183,7 +183,7 @@ export async function updateSkill(id: string, data: SkillUpdate) {
 
 export async function deleteSkill(id: string) {
   const db = createAdminClient();
-  const { data: record } = await db.from("skills").select("icon_url").eq("id", id).single();
+  const { data: record } = (await db.from("skills").select("icon_url").eq("id", id).single()) as unknown as { data: { icon_url: string | null } | null };
   const { error } = await db.from("skills").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await deleteStorageFiles([record?.icon_url]);
@@ -236,7 +236,7 @@ export async function createCertification(data: CertificationInsert) {
 export async function updateCertification(id: string, data: Partial<CertificationInsert>) {
   const db = createAdminClient();
   if ("logo_url" in data) {
-    const { data: old } = await db.from("certifications").select("logo_url").eq("id", id).single();
+    const { data: old } = (await db.from("certifications").select("logo_url").eq("id", id).single()) as unknown as { data: { logo_url: string | null } | null };
     if (old?.logo_url !== data.logo_url) {
       await deleteStorageFiles([old?.logo_url]);
     }
@@ -249,7 +249,7 @@ export async function updateCertification(id: string, data: Partial<Certificatio
 
 export async function deleteCertification(id: string) {
   const db = createAdminClient();
-  const { data: record } = await db.from("certifications").select("logo_url").eq("id", id).single();
+  const { data: record } = (await db.from("certifications").select("logo_url").eq("id", id).single()) as unknown as { data: { logo_url: string | null } | null };
   const { error } = await db.from("certifications").delete().eq("id", id);
   if (error) throw new Error(error.message);
   await deleteStorageFiles([record?.logo_url]);
