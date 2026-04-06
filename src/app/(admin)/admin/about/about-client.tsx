@@ -418,20 +418,21 @@ function AboutSkillsManager({
                       </div>
                     )}
                   />
-                  {/* Add skill dropdown */}
+                  {/* Add skill text input */}
                   {addingTo === cat ? (
                     <div className="flex gap-2 mt-1">
-                      <select
-                        defaultValue=""
-                        onChange={(e) => { if (e.target.value) { addSkill(cat, e.target.value); } }}
-                        className="flex-1 bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-2 py-1.5 text-white text-sm focus:outline-none"
-                      >
-                        <option value="" disabled>Select a skill…</option>
-                        {availableNames
-                          .filter((n) => !skills.includes(n))
-                          .map((n) => <option key={n} value={n}>{n}</option>)
-                        }
-                      </select>
+                      <input
+                        type="text"
+                        placeholder="Enter skill name…"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                            addSkill(cat, e.currentTarget.value.trim());
+                            e.currentTarget.value = "";
+                          }
+                        }}
+                        className="flex-1 bg-[#0a0a0a] border border-[rgba(255,255,255,0.15)] rounded-sm px-2 py-1.5 text-white text-sm focus:outline-none focus:border-[rgba(255,255,255,0.4)] transition-colors"
+                      />
                       <button onClick={() => setAddingTo(null)} className="text-[#555] hover:text-white px-2"><X size={14} /></button>
                     </div>
                   ) : (
