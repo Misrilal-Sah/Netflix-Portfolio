@@ -1,0 +1,369 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg: #141414;
+  --color-surface: #181818;
+  --color-surface-hover: #232323;
+  --color-accent: #E50914;
+  --color-accent-hover: #B20710;
+  --color-text: #FFFFFF;
+  --color-text-muted: #808080;
+  --color-text-dim: #646464;
+  --color-border: #333333;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-skeleton-base: #1A1A1A;
+  --color-skeleton-shine: #252525;
+
+  /* Typography */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-size-body: 14px;
+  --font-size-heading: 20px;
+  --font-size-title: 28px;
+  --font-size-display: 48px;
+
+  /* Spacing (8-point grid) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* Named spacing exceptions (outside standard scale) */
+  --hero-padding: 80px;
+  --profile-vspace: 96px;
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.8);
+
+  /* Z-index */
+  --z-carousel-arrow: 10;
+  --z-nav: 40;
+  --z-hover-card: 50;
+  --z-modal-close: 60;
+  --z-modal: 70;
+  --z-overlay: 60;
+  --z-intro: 100;
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+
+  /* Animations */
+  --animation-expand-width: expand-width 0.3s var(--ease-out) forwards;
+  --animation-expand-center: expand-center 0.3s var(--ease-out) forwards;
+  --animation-slide-from-left: slide-from-left 0.28s var(--ease-out) forwards;
+  --animation-fade-in-fast: fade-in 0.2s ease forwards;
+}
+
+/* Base styles */
+html {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Focus visible — accessibility baseline */
+:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
+/* Reduce non-essential motion for users who opt-out */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Shimmer skeleton animation */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Smooth underline expansion animation */
+@keyframes expand-width {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Center-to-both-sides underline animation (legacy style) */
+@keyframes expand-center {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-from-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Netflix-style custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E50914;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B20710;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #E50914 transparent;
+}
+
+/* ─── Experience Timeline — Responsive ──────────────────────────── */
+.exp-timeline {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Mobile default: red line hugs the left at x=24px */
+.exp-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #E50914;
+  left: 24px;
+  z-index: 0;
+}
+
+/* Desktop ≥768px: red line moves to center */
+@media (min-width: 768px) {
+  .exp-timeline::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* ─── Item wrapper ─── */
+.exp-item {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 32px;
+  padding-left: 72px;
+  padding-right: 8px;
+}
+
+@media (min-width: 768px) {
+  .exp-item {
+    padding: 10px 40px;
+    width: 50%;
+    margin-bottom: 50px;
+    left: 0;
+  }
+  .exp-item.exp-right {
+    left: 50%;
+  }
+}
+
+/* ─── Circle marker ─── */
+.exp-marker {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  top: 12px;
+  left: 2px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .exp-marker {
+    width: 60px;
+    height: 60px;
+    top: 15px;
+    left: auto;
+    right: -30px;
+  }
+  .exp-item.exp-right .exp-marker {
+    left: -30px;
+    right: auto;
+  }
+}
+
+/* ─── Date badge — shown ONLY on desktop, inside marker, floating outward ─── */
+.exp-date-desktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .exp-date-desktop {
+    display: block;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 3;
+    border: 1px solid yellow;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    left: 85px;
+  }
+  .exp-item.exp-right .exp-date-desktop {
+    left: auto;
+    right: 85px;
+  }
+}
+
+/* ─── Date badge — shown ONLY on mobile, inside card ─── */
+.exp-date-mobile {
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.12);
+  color: #333;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 768px) {
+  .exp-date-mobile {
+    display: none;
+  }
+}
+
+/* ─── Arrow notch on card (desktop only) ─── */
+.exp-arrow {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .exp-arrow {
+    display: block;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 22px;
+    transform: rotate(45deg);
+    z-index: 1;
+    right: -10px;
+  }
+  .exp-item.exp-right .exp-arrow {
+    right: auto;
+    left: -10px;
+  }
+}
+
+/* ─── Card ─── */
+.exp-card {
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .exp-card {
+    padding: 20px;
+    margin-right: 25px;
+    margin-left: 0;
+  }
+  .exp-item.exp-right .exp-card {
+    margin-left: 25px;
+    margin-right: 0;
+  }
+}
+
+/* ─── Star end-of-timeline marker ─── */
+.exp-end-marker {
+  position: relative;
+  width: 100%;
+  padding-left: 2px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .exp-end-marker {
+    width: 50%;
+    left: 50%;
+    padding-left: 0;
+  }
+}
+
+.exp-star {
+  width: 60px;
+  height: 60px;
+  background-color: #ffd700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px #141414, 0 0 0 8px rgba(255, 215, 0, 0.5);
+  position: relative;
+  z-index: 2;
+  font-size: 1.5rem;
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  .exp-star {
+    margin-left: -30px;
+  }
+}
+
+/* Utility animation classes */
+.animate-expand-width {
+  animation: var(--animation-expand-width);
+}
+
+.animate-expand-center {
+  animation: var(--animation-expand-center);
+  transform-origin: center;
+}
