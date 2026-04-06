@@ -31,6 +31,7 @@ export default async function AdminAboutPage() {
       db.from("content_variants")
         .select("profile_type, content")
         .eq("entity_type", "about")
+        .eq("entity_id", "bio")
         .eq("field_name", "bio"),
       db.from("content_variants")
         .select("entity_id, profile_type, field_name, content")
