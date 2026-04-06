@@ -37,16 +37,16 @@ function ProviderLogo({ logo, provider }: { logo: string; provider: string }) {
   if (logo.startsWith("data:")) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={logo} alt={provider} className="w-6 h-6 object-contain" />
+      <img src={logo} alt={provider} className="w-9 h-9 object-contain" />
     );
   }
   return (
     <Image
       src={logo}
       alt={provider}
-      width={24}
-      height={24}
-      className="w-6 h-6 object-contain"
+      width={36}
+      height={36}
+      className="w-9 h-9 object-contain"
     />
   );
 }
@@ -79,11 +79,11 @@ function CertCard({ cert }: { cert: Certification }) {
       />
 
       {/* Provider logo */}
-      <div className="w-10 h-10 rounded-md bg-surface-hover flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-14 h-14 rounded-md bg-surface-hover flex items-center justify-center flex-shrink-0 overflow-hidden">
         {providerInfo?.logo ? (
           <ProviderLogo logo={providerInfo.logo} provider={cert.provider} />
         ) : (
-          <Award size={20} className="text-accent" />
+          <Award size={28} className="text-accent" />
         )}
       </div>
 

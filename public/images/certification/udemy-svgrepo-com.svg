@@ -1,2 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-<svg width="800px" height="800px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><style>.a,.b{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M14.858,15.8237V34.1592A9.3053,9.3053,0,0,0,24,43.5a9.3053,9.3053,0,0,0,9.142-9.3408V15.8237"/><path class="b" d="M14.869,10.2156,24,4.5l9.131,5.7156"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Purple chevron/hat on top -->
+  <polygon points="100,18 48,58 66,58 100,34 134,58 152,58" fill="#A435F0"/>
+  <!-- White U body — visible on dark backgrounds -->
+  <path d="M55 70 L55 138 Q55 172 100 172 Q145 172 145 138 L145 70 L122 70 L122 138 Q122 150 100 150 Q78 150 78 138 L78 70 Z" fill="#FFFFFF"/>
+</svg>

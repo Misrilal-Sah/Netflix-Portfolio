@@ -223,6 +223,17 @@ export async function reorderSkillsGrouped(
   revalidatePath("/[profile]", "layout");
 }
 
+export async function renameCategory(oldName: string, newName: string) {
+  const db = createAdminClient();
+  const { error } = await db
+    .from("skills")
+    .update({ category: newName } as never)
+    .eq("category", oldName);
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/skills");
+  revalidatePath("/[profile]", "layout");
+}
+
 // ─── CERTIFICATIONS ──────────────────────────────────────────────────────────
 
 export async function createCertification(data: CertificationInsert) {

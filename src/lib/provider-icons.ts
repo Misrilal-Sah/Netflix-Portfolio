@@ -25,18 +25,18 @@ const PROVIDER_MAP: Record<string, ProviderInfo> = {
     verificationBaseUrl: "https://www.coursera.org/verify/",
   },
   HackerRank: {
-    logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300EA64' d='M12 0C5.372 0 0 5.373 0 12s5.372 12 12 12 12-5.373 12-12S18.628 0 12 0zm5.5 16.5h-2v-3.5h-7v3.5h-2v-9h2v3.5h7V7.5h2v9z'/%3E%3C/svg%3E",
+    logo: "/images/certification/hackerrank.svg",
     verificationBaseUrl: "https://www.hackerrank.com/certificates/",
   },
   Ciklum: {
-    logo: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10' fill='%232E3192'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-size='10' font-family='Arial' font-weight='bold'%3EC%3C/text%3E%3C/svg%3E",
+    logo: "/images/certification/ciklum.svg",
   },
   Codio: {
     logo: "/images/certification/codio-svgrepo-com.svg",
     verificationBaseUrl: "https://codio.com/",
   },
   "Codio (Coursera)": {
-    logo: "/images/certification/codio-svgrepo-com.svg",
+    logo: "/images/certification/coursera-svgrepo-com.svg",
     verificationBaseUrl: "https://www.coursera.org/verify/",
   },
   LinkedIn: {
@@ -79,3 +79,4 @@ export function getProviderInfo(provider: string): ProviderInfo | null {
 
   return null;
 }
+

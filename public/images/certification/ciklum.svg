@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="cg" x1="100" y1="25" x2="100" y2="175" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#1B3EC8"/>
+      <stop offset="100%" stop-color="#3DDFBE"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Each circle uses stroke-dasharray to draw only 270° of its circumference (a C-shape).
+    rotate(45) shifts the start point so the opening (gap) faces RIGHT.
+
+    Circumferences:
+      r=70  → 2π·70 = 439.82  → arc 270° = 329.87, gap 90° = 109.96
+      r=50  → 2π·50 = 314.16  → arc 270° = 235.62, gap 90° =  78.54
+      r=30  → 2π·30 = 188.50  → arc 270° = 141.37, gap 90° =  47.12
+  -->
+
+  <!-- Outer C arc -->
+  <circle cx="100" cy="100" r="70"
+    fill="none"
+    stroke="url(#cg)"
+    stroke-width="17"
+    stroke-dasharray="329.87 109.96"
+    stroke-linecap="round"
+    transform="rotate(45 100 100)"/>
+
+  <!-- Middle C arc -->
+  <circle cx="100" cy="100" r="50"
+    fill="none"
+    stroke="url(#cg)"
+    stroke-width="15"
+    stroke-dasharray="235.62 78.54"
+    stroke-linecap="round"
+    transform="rotate(45 100 100)"/>
+
+  <!-- Inner C arc -->
+  <circle cx="100" cy="100" r="30"
+    fill="none"
+    stroke="url(#cg)"
+    stroke-width="13"
+    stroke-dasharray="141.37 47.12"
+    stroke-linecap="round"
+    transform="rotate(45 100 100)"/>
+</svg>

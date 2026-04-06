@@ -32,13 +32,6 @@ export function generateMetadata(): Metadata {
 
 
 
-const CATEGORY_ORDER = [
-  "Frontend",
-  "Backend",
-  "Database",
-  "DevOps",
-  "Tools",
-] as const;
 
 function SkillBadge({ skill }: { skill: Skill }) {
   const icon = getSkillIcon(skill.name);
@@ -46,7 +39,10 @@ function SkillBadge({ skill }: { skill: Skill }) {
   return (
     <div className="group relative bg-surface border border-border rounded-xl p-4 cursor-default flex flex-col items-center text-center gap-3 hover:border-accent hover:shadow-[0_0_20px_rgba(229,9,20,0.25)] hover:scale-[1.12] hover:-translate-y-3 hover:z-10 transition-all duration-500 ease-out">
       <div className="w-12 h-12 rounded-full bg-[rgba(255,255,255,0.05)] flex items-center justify-center flex-shrink-0">
-        {icon ? (
+        {skill.icon_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={skill.icon_url} alt={skill.name} className="w-7 h-7 object-contain" />
+        ) : icon ? (
           <svg
             viewBox="0 0 24 24"
             className="w-7 h-7"
@@ -71,6 +67,7 @@ function SkillBadge({ skill }: { skill: Skill }) {
   );
 }
 
+
 export default async function SkillsPage({
   params,
 }: {
@@ -85,28 +82,26 @@ export default async function SkillsPage({
   const [skills, pageCopy] = await Promise.all([getSkills(), getSkillsPageCopy()]);
   const copy = pageCopy[profile as ProfileType];
 
-  // Group by category
-  const grouped = CATEGORY_ORDER.reduce(
-    (acc, cat) => {
-      const group = skills.filter((s) => s.category === cat);
-      if (group.length > 0) acc[cat] = group;
-      return acc;
-    },
-    {} as Record<string, Skill[]>
-  );
+  // Derive category order dynamically from display_order (set by admin drag-and-drop)
+  // The reorderSkillsGrouped action encodes: display_order = catIdx * 1000 + skillIdx
+  // So the minimum display_order within a category determines category position.
+  const categoryOrder = [
+    ...new Set(
+      [...skills]
+        .sort((a, b) => a.display_order - b.display_order)
+        .map((s) => s.category)
+    ),
+  ];
 
-  // Any categories not in CATEGORY_ORDER
-  const extra = skills
-    .filter((s) => !(CATEGORY_ORDER as readonly string[]).includes(s.category))
-    .reduce(
-      (acc, s) => {
-        acc[s.category] = [...(acc[s.category] ?? []), s];
-        return acc;
-      },
-      {} as Record<string, Skill[]>
-    );
+  // Group skills by category, preserving per-category display_order sort
+  const allGroups = categoryOrder.reduce((acc, cat) => {
+    const group = skills
+      .filter((s) => s.category === cat)
+      .sort((a, b) => a.display_order - b.display_order);
+    if (group.length > 0) acc[cat] = group;
+    return acc;
+  }, {} as Record<string, Skill[]>);
 
-  const allGroups = { ...grouped, ...extra };
 
   return (
     <div className="min-h-screen bg-bg pb-2xl">
