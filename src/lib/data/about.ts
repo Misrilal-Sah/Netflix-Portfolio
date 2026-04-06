@@ -118,6 +118,7 @@ export async function getAboutContent(
       .from("content_variants")
       .select("content")
       .eq("entity_type", "about")
+      .eq("entity_id", "bio")
       .eq("field_name", "bio")
       .eq("profile_type", profileType)
       .maybeSingle();
