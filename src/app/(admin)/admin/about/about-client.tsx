@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { openConfirm } from "@/components/ui/confirm-dialog";
 import { Pencil, X, Check, Plus, Trash2, ChevronDown, ChevronRight, Save } from "lucide-react";
 import type { AboutSection, Skill } from "@/lib/types/database";
-import { updateAboutSection, updateAboutSkillsConfig, upsertAboutHero, upsertAboutBio } from "@/lib/actions/admin";
+import { updateAboutSkillsConfig, upsertAboutHero, upsertAboutBio, upsertAboutSectionVariant } from "@/lib/actions/admin";
 import { SortableList } from "@/components/admin/sortable-list";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { cn } from "@/lib/utils";
@@ -172,43 +171,91 @@ function HeroEditor({
 
 
 
-type FormValues = { title: string; content: string };
+type SectionVariants = Record<ProfileType, { title: string; content: string }>;
 
-function SectionEditor({ section, onDone }: { section: AboutSection; onDone: () => void }) {
+function SectionEditor({
+  section,
+  initialVariants,
+  onDone,
+}: {
+  section: AboutSection;
+  initialVariants: SectionVariants;
+  onDone: () => void;
+}) {
   const [isPending, startTransition] = useTransition();
-  const { register, handleSubmit } = useForm<FormValues>({
-    defaultValues: { title: section.title, content: section.content ?? "" },
-  });
+  const [activeProfile, setActiveProfile] = useState<ProfileType>("recruiter");
+  const [variants, setVariants] = useState<SectionVariants>(initialVariants);
 
-  function onSubmit(values: FormValues) {
+  function updateVariant(profile: ProfileType, field: "title" | "content", val: string) {
+    setVariants((prev) => ({
+      ...prev,
+      [profile]: { ...prev[profile], [field]: val },
+    }));
+  }
+
+  function saveVariant(profile: ProfileType) {
     startTransition(async () => {
       try {
-        await updateAboutSection(section.id, { title: values.title, content: values.content || null });
-        toast.success("Section updated");
-        onDone();
-      } catch (err) { toast.error(err instanceof Error ? err.message : "Error"); }
+        await upsertAboutSectionVariant(section.section_key, profile, variants[profile]);
+        toast.success(`Saved for ${profile}`);
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Error");
+      }
     });
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 mt-3">
+    <div className="mt-3 space-y-3">
+      {/* Profile tabs */}
+      <div className="flex gap-1 border-b border-[rgba(255,255,255,0.08)]">
+        {PROFILES.map((p) => (
+          <button
+            key={p}
+            onClick={() => setActiveProfile(p)}
+            className={cn(
+              "px-3 py-2 text-xs font-bold capitalize transition-colors border-b-2 -mb-px",
+              activeProfile === p ? "text-white border-current" : "text-[#555] border-transparent hover:text-[#808080]"
+            )}
+            style={activeProfile === p ? { color: PROFILE_COLORS[p], borderColor: PROFILE_COLORS[p] } : {}}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
       <div>
         <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Title</label>
-        <input {...register("title")} className={inputClass} />
+        <input
+          value={variants[activeProfile].title}
+          onChange={(e) => updateVariant(activeProfile, "title", e.target.value)}
+          className={inputClass}
+        />
       </div>
       <div>
         <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Content</label>
-        <textarea {...register("content")} rows={5} className={cn(inputClass, "resize-y")} />
+        <textarea
+          value={variants[activeProfile].content}
+          onChange={(e) => updateVariant(activeProfile, "content", e.target.value)}
+          rows={5}
+          className={cn(inputClass, "resize-y")}
+        />
       </div>
       <div className="flex gap-2">
-        <button type="submit" disabled={isPending} className="flex items-center gap-1.5 px-4 py-2 bg-[#E50914] hover:bg-[#f40d1a] disabled:opacity-50 text-white font-bold text-sm rounded-sm transition-colors">
-          <Check size={14} /> {isPending ? "Saving…" : "Save"}
+        <button
+          onClick={() => saveVariant(activeProfile)}
+          disabled={isPending}
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#E50914] hover:bg-[#f40d1a] disabled:opacity-50 text-white font-bold text-sm rounded-sm transition-colors"
+        >
+          <Check size={14} /> {isPending ? "Saving…" : `Save ${activeProfile}`}
         </button>
-        <button type="button" onClick={onDone} className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#222] text-[#808080] font-bold text-sm rounded-sm border border-[rgba(255,255,255,0.1)] transition-colors">
+        <button
+          type="button"
+          onClick={onDone}
+          className="px-4 py-2 bg-[#1a1a1a] hover:bg-[#222] text-[#808080] font-bold text-sm rounded-sm border border-[rgba(255,255,255,0.1)] transition-colors"
+        >
           Cancel
         </button>
       </div>
-    </form>
+    </div>
   );
 }
 
@@ -417,16 +464,41 @@ export function AboutClient({
   allSkills,
   initialHero,
   initialBios,
+  initialSectionVariants,
 }: {
   initialSections: AboutSection[];
   initialSkillsConfig: AboutSkillsConfig;
   allSkills: Skill[];
   initialHero: AboutHero;
   initialBios: Record<ProfileType, string>;
+  initialSectionVariants: Record<string, SectionVariants>;
 }) {
   const [sections] = useState(initialSections);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tab, setTab] = useState<"hero" | "content" | "skills">("hero");
+
+  // Build fallback variants for sections that have no DB variants yet
+  function getVariantsForSection(section: AboutSection): SectionVariants {
+    const db = initialSectionVariants[section.section_key];
+    if (db) {
+      // Fill any missing profile slots with the global section default
+      return (["recruiter", "developer", "stalker", "adventurer"] as ProfileType[]).reduce(
+        (acc, p) => ({
+          ...acc,
+          [p]: db[p]?.title
+            ? db[p]
+            : { title: section.title, content: section.content ?? "" },
+        }),
+        {} as SectionVariants
+      );
+    }
+    return {
+      recruiter: { title: section.title, content: section.content ?? "" },
+      developer: { title: section.title, content: section.content ?? "" },
+      stalker: { title: section.title, content: section.content ?? "" },
+      adventurer: { title: section.title, content: section.content ?? "" },
+    };
+  }
 
   return (
     <div>
@@ -469,7 +541,11 @@ export function AboutClient({
                 </button>
               </div>
               {editingId === section.id ? (
-                <SectionEditor section={section} onDone={() => setEditingId(null)} />
+                <SectionEditor
+                  section={section}
+                  initialVariants={getVariantsForSection(section)}
+                  onDone={() => setEditingId(null)}
+                />
               ) : (
                 <p className="mt-3 text-[#808080] text-sm leading-relaxed">
                   {section.content ?? <span className="text-[#444] italic">No content</span>}

@@ -128,6 +128,36 @@ export async function upsertAboutBio(profileType: string, content: string) {
   revalidatePath("/[profile]/about", "page");
 }
 
+export async function upsertAboutSectionVariant(
+  sectionKey: string,
+  profileType: string,
+  data: { title: string; content: string }
+) {
+  const db = createAdminClient();
+  const rows = [
+    {
+      entity_type: "about_section",
+      entity_id: sectionKey,
+      profile_type: profileType,
+      field_name: "title",
+      content: data.title,
+    },
+    {
+      entity_type: "about_section",
+      entity_id: sectionKey,
+      profile_type: profileType,
+      field_name: "content",
+      content: data.content,
+    },
+  ];
+  const { error } = await db
+    .from("content_variants")
+    .upsert(rows as never, { onConflict: "entity_type,entity_id,profile_type,field_name" });
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/about");
+  revalidatePath("/[profile]/about", "page");
+}
+
 // ─── HOMEPAGE HERO ───────────────────────────────────────────────────────────
 
 export async function upsertHomepageHero(value: Record<string, unknown>, profileType?: string) {

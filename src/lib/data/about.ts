@@ -82,9 +82,37 @@ export async function getAboutContent(
 ): Promise<{ sections: AboutSection[]; bio: string }> {
   const sections = await getAboutSections();
 
+  const db = getDataClient();
+
+  // Apply per-profile section overrides (title + content per profile)
+  let resolvedSections = sections;
+  if (db && profileType) {
+    const { data: sectionVariants } = await db
+      .from("content_variants")
+      .select("entity_id, field_name, content")
+      .eq("entity_type", "about_section")
+      .eq("profile_type", profileType);
+
+    if (sectionVariants?.length) {
+      const variantMap: Record<string, Record<string, string>> = {};
+      for (const v of sectionVariants) {
+        if (!variantMap[v.entity_id]) variantMap[v.entity_id] = {};
+        variantMap[v.entity_id][v.field_name] = v.content;
+      }
+      resolvedSections = sections.map((s) => {
+        const overrides = variantMap[s.section_key];
+        if (!overrides) return s;
+        return {
+          ...s,
+          title: overrides.title ?? s.title,
+          content: overrides.content ?? s.content,
+        };
+      });
+    }
+  }
+
   // Try fetching profile bio from content_variants
   let bio: string | null = null;
-  const db = getDataClient();
   if (db && profileType) {
     const { data } = await db
       .from("content_variants")
@@ -100,7 +128,7 @@ export async function getAboutContent(
     ? profileBioVariants[profileType]
     : profileBioVariants.recruiter;
 
-  return { sections, bio: bio ?? fallbackBio };
+  return { sections: resolvedSections, bio: bio ?? fallbackBio };
 }
 
 // ─── About Hero ───────────────────────────────────────────────────────────────
