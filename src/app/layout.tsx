@@ -10,12 +10,20 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Misril.dev — Developer Portfolio",
+  title: {
+    default: "Misril - Portfolio",
+    template: "Misril - Portfolio",
+  },
   description:
     "Full Stack Developer portfolio — Netflix-style experience showcasing projects, skills, and certifications.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev"
   ),
+  icons: {
+    icon: { url: "/favicon.svg", type: "image/svg+xml" },
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 const jsonLd = {
@@ -58,6 +66,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`bg-bg text-text ${bebasNeue.variable}`}>
+      <head>
+        {/* Explicit favicon link — prevents browser from requesting /favicon.ico and flickering */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.svg" />
+      </head>
       <body className="font-sans min-h-screen antialiased">
         <script
           type="application/ld+json"

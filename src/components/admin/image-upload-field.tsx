@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/actions/upload";
 import { cn } from "@/lib/utils";
 
 interface ImageUploadFieldProps {
@@ -66,27 +66,22 @@ export function ImageUploadField({ label, value, onChange, className }: ImageUpl
 
     setUploading(true);
     try {
+      // Resize & convert to WebP in the browser
       const blob = await resizeAndConvertToWebP(file);
       if (blob.size > 2 * 1024 * 1024) {
         toast.error("Resized image still exceeds 2 MB");
         return;
       }
 
-      const supabase = createClient();
+      // Build a FormData and send to the server action (uses admin client → bypasses RLS)
       const filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.webp`;
-      const { data, error } = await supabase.storage
-        .from("portfolio-images")
-        .upload(filename, blob, { contentType: "image/webp", upsert: false });
+      const webpFile = new File([blob], filename, { type: "image/webp" });
 
-      if (error) {
-        toast.error(`Upload failed: ${error.message}`);
-        return;
-      }
+      const formData = new FormData();
+      formData.append("file", webpFile);
+      formData.append("filename", filename);
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("portfolio-images").getPublicUrl(data.path);
-
+      const publicUrl = await uploadImage(formData);
       onChange(publicUrl);
       toast.success("Image uploaded");
     } catch (err) {

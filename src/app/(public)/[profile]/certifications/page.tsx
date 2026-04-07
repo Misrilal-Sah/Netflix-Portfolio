@@ -10,21 +10,21 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
 export function generateMetadata(): Metadata {
   return {
-    title: "Certifications — Misril.dev",
+    title: { absolute: "Misril - Portfolio" },
     description:
       "7 professional certifications including Stripe, Ciklum AI Academy, Meta Frontend, and HackerRank.",
     alternates: {
       canonical: `${SITE_URL}/recruiter/certifications`,
     },
     openGraph: {
-      title: "Certifications — Misril.dev",
+      title: "Misril - Portfolio",
       description: "7 professional certifications including Stripe, Ciklum AI Academy, Meta Frontend, and HackerRank.",
       url: `${SITE_URL}/recruiter/certifications`,
       images: [{ url: `${SITE_URL}/images/Misril.jpeg`, alt: "Misrilal Sah" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Certifications — Misril.dev",
+      title: "Misril - Portfolio",
       description: "7 professional certifications including Stripe, Ciklum AI Academy, Meta Frontend, and HackerRank.",
     },
   };

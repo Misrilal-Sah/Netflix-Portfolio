@@ -9,21 +9,21 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
 export function generateMetadata(): Metadata {
   return {
-    title: "About — Misril.dev",
+    title: { absolute: "Misril - Portfolio" },
     description:
       "Misrilal Sah — Full Stack Developer from Mumbai, India. Building production applications since 2022.",
     alternates: {
       canonical: `${SITE_URL}/recruiter/about`,
     },
     openGraph: {
-      title: "About — Misril.dev",
+      title: "Misril - Portfolio",
       description: "Misrilal Sah — Full Stack Developer from Mumbai, India. Building production applications since 2022.",
       url: `${SITE_URL}/recruiter/about`,
       images: [{ url: `${SITE_URL}/images/Misril.jpeg`, width: 800, height: 800, alt: "Misrilal Sah" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "About — Misril.dev",
+      title: "Misril - Portfolio",
       description: "Misrilal Sah — Full Stack Developer from Mumbai, India.",
       images: [`${SITE_URL}/images/Misril.jpeg`],
     },

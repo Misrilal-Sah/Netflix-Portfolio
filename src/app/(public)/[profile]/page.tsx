@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { PROFILES, type ProfileType } from "@/lib/constants";
+import { notFound } from "next/navigation";
+import { PROFILES, PROFILE_TYPES, type ProfileType } from "@/lib/constants";
 import { getHomepageHero, getHomepageCards, getHomepageProjectPicks } from "@/lib/data";
 import { ProfileHomeClient } from "./profile-home-client";
 
@@ -7,7 +8,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Misril.dev — Misrilal Sah, Full Stack Developer",
+    title: { absolute: "Misril - Portfolio" },
     description:
       "Full Stack Developer with 2+ years building production React, Node.js, and AI applications. Netflix-style interactive portfolio.",
     alternates: {
@@ -44,8 +45,14 @@ export default async function ProfileHomePage({
   params: Promise<{ profile: string }>;
 }) {
   const { profile } = await params;
-  const profileData = PROFILES[profile as ProfileType];
+
+  // Guard: only allow known profile slugs — prevents crash on /favicon.ico etc.
+  if (!(PROFILE_TYPES as readonly string[]).includes(profile)) {
+    notFound();
+  }
+
   const profileType = profile as ProfileType;
+  const profileData = PROFILES[profileType];
 
   const [hero, continueWatchingCards, topPicksCards, projectPicks] = await Promise.all([
     getHomepageHero(profileType),

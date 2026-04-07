@@ -7,6 +7,7 @@ import { X, ExternalLink, GitBranch } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectButtonConfig } from "@/lib/types/database";
 import type { ProfileType } from "@/lib/constants";
@@ -238,7 +239,27 @@ export function ProjectDetailModal({
                       "prose-th:text-white prose-td:text-text-muted"
                     )}
                   >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
+                        // Make tables horizontally scrollable
+                        table: ({ node: _node, ...props }) => (
+                          <div className="overflow-x-auto">
+                            <table {...props} />
+                          </div>
+                        ),
+                        // Open all links in new tab
+                        a: ({ node: _node, ...props }) => (
+                          <a target="_blank" rel="noopener noreferrer" {...props} />
+                        ),
+                        // Render images with max-width
+                        img: ({ node: _node, ...props }) => (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img {...props} alt={props.alt ?? ""} style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }} />
+                        ),
+                      }}
+                    >
                       {project.readme_content}
                     </ReactMarkdown>
                   </div>

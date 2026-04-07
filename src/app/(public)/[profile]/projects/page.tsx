@@ -8,14 +8,14 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://misril.dev";
 
 export function generateMetadata(): Metadata {
   return {
-    title: "Projects — Misril.dev",
+    title: { absolute: "Misril - Portfolio" },
     description:
       "26+ production projects across React, Next.js, Node.js, Python, Vue.js, and AI. Browse the full build log.",
     alternates: {
       canonical: `${SITE_URL}/recruiter/projects`,
     },
     openGraph: {
-      title: "Projects — Misril.dev",
+      title: "Misril - Portfolio",
       description:
         "26+ production projects across React, Next.js, Node.js, Python, Vue.js, and AI.",
       url: `${SITE_URL}/recruiter/projects`,
@@ -23,7 +23,7 @@ export function generateMetadata(): Metadata {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Projects — Misril.dev",
+      title: "Misril - Portfolio",
       description: "26+ production projects across React, Next.js, Node.js, Python, Vue.js, and AI.",
     },
   };
