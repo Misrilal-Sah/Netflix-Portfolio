@@ -64,7 +64,7 @@ const SOCIAL_LINKS = [
   },
   {
     label: "Instagram",
-    href: "https://www.instagram.com/sah._099/",
+    href: "https://www.instagram.com/_shah._.99/",
     icon: InstagramIcon,
     hoverColor: "#E1306C",
   },
@@ -232,11 +232,11 @@ export function NetflixFooter() {
       <div className="border-t border-[rgba(255,255,255,0.05)] px-[4vw] py-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-[#444] text-xs">
-            &copy; {new Date().getFullYear()} Misrilal Sah. Built with Next.js &amp; Supabase.
+            &copy; {new Date().getFullYear()}{" "} Misrilal Sah. Built with Next.js &amp; Supabase.
           </p>
           <p className="text-[#333] text-xs">
             Designed &amp; developed by{" "}
-            <span className="text-[#E50914] font-semibold">Misrilal Shaha</span>
+            <span className="text-[#E50914] font-semibold">Misrilal Sah</span>
           </p>
         </div>
       </div>
