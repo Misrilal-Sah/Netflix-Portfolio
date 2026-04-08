@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import type { ProfileType } from "@/lib/constants";
 import type { Project, HomepageCard, HomepageProjectPick } from "@/lib/types/database";
@@ -9,7 +8,6 @@ import { HeroBillboard } from "@/components/netflix/hero-billboard";
 import { ContinueWatching } from "@/components/netflix/continue-watching";
 import { ContentRow } from "@/components/netflix/content-row";
 import { HoverCard } from "@/components/netflix/hover-card";
-import { ContentModal } from "@/components/netflix/content-modal";
 
 interface ProfileHomeClientProps {
   profile: ProfileType;
@@ -28,8 +26,6 @@ export function ProfileHomeClient({
   topPicksCards,
   projectPicks,
 }: ProfileHomeClientProps) {
-  const [modalProject, setModalProject] = useState<Project | null>(null);
-
   return (
     <div className="min-h-screen bg-bg">
       {/* Hero Billboard — personal intro */}
@@ -88,7 +84,7 @@ export function ProfileHomeClient({
               <HoverCard
                 title={project.title}
                 metadata={project.category ?? ""}
-                onMoreInfo={() => setModalProject(project)}
+                href={`/${profile}/projects`}
               >
                 <div className="aspect-video bg-surface rounded-md overflow-hidden relative">
                   {project.screenshot_url ? (
@@ -109,44 +105,6 @@ export function ProfileHomeClient({
           ))}
         </ContentRow>
       )}
-
-      {/* Content Modal */}
-      <ContentModal
-        isOpen={!!modalProject}
-        onClose={() => setModalProject(null)}
-        title={modalProject?.title ?? ""}
-        heroImage={modalProject?.screenshot_url ?? undefined}
-      >
-        {modalProject && (
-          <div className="space-y-md">
-            <p className="text-[length:var(--font-size-body)] text-text">
-              {modalProject.description}
-            </p>
-            {modalProject.tags.length > 0 && (
-              <div className="flex flex-wrap gap-xs">
-                {modalProject.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-sm py-xs rounded-sm bg-surface-hover text-[length:var(--font-size-body)] text-text-muted"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-            {modalProject.github_url && (
-              <a
-                href={modalProject.github_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-md text-[length:var(--font-size-body)] text-accent hover:text-accent-hover transition-colors"
-              >
-                View on GitHub →
-              </a>
-            )}
-          </div>
-        )}
-      </ContentModal>
     </div>
   );
 }
