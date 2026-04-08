@@ -18,6 +18,11 @@ interface ProjectDetailModalProps {
   onClose: () => void;
 }
 
+function isBadgeImage(src?: string | Blob) {
+  if (typeof src !== "string") return false;
+  return /(?:^|\/\/)(?:img\.shields\.io|skillicons\.dev)\//i.test(src);
+}
+
 const DEFAULT_BUTTON_CONFIG: ProjectButtonConfig = {
   demo_text: "View Live",
   demo_color: "#E50914",
@@ -256,7 +261,28 @@ export function ProjectDetailModal({
                         // Render images with max-width
                         img: ({ node: _node, ...props }) => (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img {...props} alt={props.alt ?? ""} style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }} />
+                          <img
+                            {...props}
+                            alt={props.alt ?? ""}
+                            style={
+                              isBadgeImage(props.src)
+                                ? {
+                                    maxWidth: "100%",
+                                    height: "auto",
+                                    display: "inline-block",
+                                    verticalAlign: "middle",
+                                    margin: "0 0.45rem 0.45rem 0",
+                                    borderRadius: "4px",
+                                  }
+                                : {
+                                    maxWidth: "100%",
+                                    height: "auto",
+                                    display: "block",
+                                    margin: "0.75rem auto",
+                                    borderRadius: "6px",
+                                  }
+                            }
+                          />
                         ),
                       }}
                     >
