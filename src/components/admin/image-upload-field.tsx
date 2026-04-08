@@ -48,6 +48,10 @@ async function resizeAndConvertToWebP(file: File, maxPx = 1920): Promise<Blob> {
   });
 }
 
+function isGifFile(file: File): boolean {
+  return file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+}
+
 export function ImageUploadField({ label, value, onChange, className }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -66,19 +70,25 @@ export function ImageUploadField({ label, value, onChange, className }: ImageUpl
 
     setUploading(true);
     try {
-      // Resize & convert to WebP in the browser
-      const blob = await resizeAndConvertToWebP(file);
-      if (blob.size > 2 * 1024 * 1024) {
-        toast.error("Resized image still exceeds 2 MB");
-        return;
+      let uploadFile: File;
+      let filename: string;
+
+      if (isGifFile(file)) {
+        filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.gif`;
+        uploadFile = new File([file], filename, { type: "image/gif" });
+      } else {
+        // Resize & convert to WebP in the browser for non-GIF assets
+        const blob = await resizeAndConvertToWebP(file);
+        if (blob.size > 2 * 1024 * 1024) {
+          toast.error("Resized image still exceeds 2 MB");
+          return;
+        }
+        filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.webp`;
+        uploadFile = new File([blob], filename, { type: "image/webp" });
       }
 
-      // Build a FormData and send to the server action (uses admin client → bypasses RLS)
-      const filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.webp`;
-      const webpFile = new File([blob], filename, { type: "image/webp" });
-
       const formData = new FormData();
-      formData.append("file", webpFile);
+      formData.append("file", uploadFile);
       formData.append("filename", filename);
 
       const publicUrl = await uploadImage(formData);
@@ -161,7 +171,7 @@ export function ImageUploadField({ label, value, onChange, className }: ImageUpl
                     choose file
                   </button>
                 </p>
-                <p className="text-[#333] text-xs">PNG, JPG, WebP — auto-converted to WebP, max 10 MB</p>
+                <p className="text-[#333] text-xs">GIF preserved (animated). PNG/JPG/WebP auto-converted to WebP, max 10 MB</p>
               </>
             )}
           </div>

@@ -4,7 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { toast } from "sonner";
 import { Plus, Save, Upload, X } from "lucide-react";
 import { upsertSiteSetting, upsertHomepageHero } from "@/lib/actions/admin";
-import { createClient } from "@/lib/supabase/client";
+import { uploadImage } from "@/lib/actions/upload";
 import { cn } from "@/lib/utils";
 import {
   DEFAULT_EXPERIENCE_COPY,
@@ -49,6 +49,10 @@ async function resizeAndConvertToWebP(file: File, maxPx = 1920): Promise<Blob> {
   });
 }
 
+function isGifFile(file: File): boolean {
+  return file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+}
+
 function ImageUpload() {
   const [uploading, setUploading] = useState(false);
   const [lastUrl, setLastUrl] = useState("");
@@ -64,16 +68,23 @@ function ImageUpload() {
 
     setUploading(true);
     try {
-      const blob = await resizeAndConvertToWebP(file);
-      if (blob.size > 2 * 1024 * 1024) { toast.error("Resized image still exceeds 2MB"); setUploading(false); return; }
+      let uploadFile: File;
+      let filename: string;
 
-      const supabase = createClient();
-      const filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.webp`;
-      const { data, error } = await supabase.storage.from("portfolio-images").upload(filename, blob, { contentType: "image/webp", upsert: false });
+      if (isGifFile(file)) {
+        filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.gif`;
+        uploadFile = new File([file], filename, { type: "image/gif" });
+      } else {
+        const blob = await resizeAndConvertToWebP(file);
+        if (blob.size > 2 * 1024 * 1024) { toast.error("Resized image still exceeds 2MB"); setUploading(false); return; }
+        filename = `${Date.now()}-${file.name.replace(/\.[^/.]+$/, "")}.webp`;
+        uploadFile = new File([blob], filename, { type: "image/webp" });
+      }
 
-      if (error) { toast.error(`Upload failed: ${error.message}`); return; }
-
-      const { data: { publicUrl } } = supabase.storage.from("portfolio-images").getPublicUrl(data.path);
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("filename", filename);
+      const publicUrl = await uploadImage(formData);
       setLastUrl(publicUrl);
       toast.success("Uploaded! URL copied to clipboard");
       navigator.clipboard.writeText(publicUrl).catch(() => {});
@@ -88,7 +99,7 @@ function ImageUpload() {
   return (
     <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-md p-5">
       <h3 className="text-white font-bold mb-1">Image Upload</h3>
-      <p className="text-[#555] text-xs mb-4">Auto-resized to max 1920px, converted to WebP (&lt;2MB). Public URL copied to clipboard on upload.</p>
+      <p className="text-[#555] text-xs mb-4">GIF uploads are preserved as animated GIF. Other images are auto-resized to max 1920px and converted to WebP (&lt;2MB). Public URL copied to clipboard on upload.</p>
 
       <label className={cn(
         "inline-flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-bold cursor-pointer transition-colors",
@@ -256,13 +267,22 @@ function HomepageHeroSection({ initialHeroes }: { initialHeroes: Record<ProfileT
     if (file.size > 10 * 1024 * 1024) { toast.error("File too large (max 10MB)"); return; }
     setUploading(true);
     try {
-      const blob = await resizeAndConvertToWebP(file);
-      const { createClient: makeClient } = await import("@/lib/supabase/client");
-      const supabase = makeClient();
-      const filename = `hero-${Date.now()}.webp`;
-      const { data, error } = await supabase.storage.from("portfolio-images").upload(filename, blob, { contentType: "image/webp", upsert: false });
-      if (error) { toast.error(`Upload failed: ${error.message}`); return; }
-      const { data: { publicUrl } } = supabase.storage.from("portfolio-images").getPublicUrl(data.path);
+      let uploadFile: File;
+      let filename: string;
+
+      if (isGifFile(file)) {
+        filename = `hero-${activeProfile}-${Date.now()}.gif`;
+        uploadFile = new File([file], filename, { type: "image/gif" });
+      } else {
+        const blob = await resizeAndConvertToWebP(file);
+        filename = `hero-${activeProfile}-${Date.now()}.webp`;
+        uploadFile = new File([blob], filename, { type: "image/webp" });
+      }
+
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("filename", filename);
+      const publicUrl = await uploadImage(formData);
       update("image_url", publicUrl);
       toast.success("Image uploaded");
     } catch (err) {
