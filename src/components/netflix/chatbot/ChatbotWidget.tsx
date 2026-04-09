@@ -28,11 +28,7 @@ export function ChatbotWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Don't render on admin routes or the profile selection page
-  if (pathname.startsWith("/admin") || pathname === "/") return null;
-
   // Auto-scroll to bottom when messages change
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -40,14 +36,12 @@ export function ChatbotWidget() {
   }, [messages, loading]);
 
   // Focus input when opened
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [open]);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const sendMessage = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
@@ -87,6 +81,9 @@ export function ChatbotWidget() {
       setLoading(false);
     }
   }, [input, loading, messages]);
+
+  // Don't render on admin routes or the profile selection page
+  if (pathname.startsWith("/admin") || pathname === "/") return null;
 
   return (
     <>

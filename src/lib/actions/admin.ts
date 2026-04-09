@@ -171,6 +171,44 @@ export async function upsertHomepageHero(value: Record<string, unknown>, profile
   revalidatePath("/[profile]", "page");
 }
 
+/**
+ * Update the resume_url field across all 4 per-profile homepage hero records.
+ * Merges into existing data so other fields (title, image, etc.) are preserved.
+ */
+export async function setResumeUrlAllProfiles(resumeUrl: string) {
+  const db = createAdminClient();
+  const profiles = ["recruiter", "developer", "stalker", "adventurer"];
+
+  // Fetch all existing hero records in one query
+  const keys = profiles.map((p) => `homepage_hero_${p}`);
+  const { data: rows } = await db
+    .from("site_settings")
+    .select("key, value")
+    .in("key", keys);
+
+  const existingMap = Object.fromEntries(
+    (rows ?? []).map((r: { key: string; value: Record<string, unknown> }) => [r.key, r.value])
+  );
+
+  // Build upsert rows — merge resume_url into whatever is already stored
+  const upserts = profiles.map((profile) => {
+    const key = `homepage_hero_${profile}`;
+    const existing = (existingMap[key] as Record<string, unknown>) ?? {};
+    return { key, value: { ...existing, resume_url: resumeUrl } };
+  });
+
+  const { error } = await db
+    .from("site_settings")
+    .upsert(upserts as never, { onConflict: "key" });
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/[profile]", "page");
+  revalidatePath("/[profile]", "layout");
+}
+
+
 // ─── HOMEPAGE CARDS (Continue Watching + Top Picks) ──────────────────────────
 
 export async function createHomepageCard(data: {

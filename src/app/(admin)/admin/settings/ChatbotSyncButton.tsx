@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { RefreshCw, Trash2, Bot } from "lucide-react";
 
@@ -8,10 +8,21 @@ interface ChatbotSyncButtonProps {
   initialLastSynced: string | null;
 }
 
+/** Format a date string client-side only to avoid locale hydration mismatch */
+function useClientFormattedDate(isoString: string | null): string {
+  const [formatted, setFormatted] = useState<string>("");
+  useEffect(() => {
+    if (!isoString) { setFormatted(""); return; }
+    setFormatted(new Date(isoString).toLocaleString());
+  }, [isoString]);
+  return formatted;
+}
+
 export function ChatbotSyncButton({ initialLastSynced }: ChatbotSyncButtonProps) {
   const [lastSynced, setLastSynced] = useState(initialLastSynced);
   const [isSyncing, startSync] = useTransition();
   const [isRegenerating, startRegen] = useTransition();
+  const formattedDate = useClientFormattedDate(lastSynced);
 
   function handleSync() {
     startSync(async () => {
@@ -55,11 +66,11 @@ export function ChatbotSyncButton({ initialLastSynced }: ChatbotSyncButtonProps)
         Sync after updating your profile, contact details, skills, projects, or experience.
       </p>
 
-      {lastSynced && (
+      {lastSynced && formattedDate && (
         <p className="text-[#808080] text-xs mb-3">
           Last synced:{" "}
           <span className="text-white">
-            {new Date(lastSynced).toLocaleString()}
+            {formattedDate}
           </span>
         </p>
       )}

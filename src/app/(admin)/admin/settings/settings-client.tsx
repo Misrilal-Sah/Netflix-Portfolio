@@ -3,8 +3,9 @@
 import { useState, useTransition, useRef } from "react";
 import { toast } from "sonner";
 import { Plus, Save, Upload, X } from "lucide-react";
-import { upsertSiteSetting, upsertHomepageHero } from "@/lib/actions/admin";
+import { upsertSiteSetting, upsertHomepageHero, setResumeUrlAllProfiles } from "@/lib/actions/admin";
 import { uploadImage } from "@/lib/actions/upload";
+import { uploadResume } from "@/lib/actions/upload-resume";
 import { cn } from "@/lib/utils";
 import { ChatbotSyncButton } from "./ChatbotSyncButton";
 import {
@@ -117,6 +118,85 @@ function ImageUpload() {
           <button onClick={() => { navigator.clipboard.writeText(lastUrl); toast.success("Copied!"); }} className="p-2 text-[#555] hover:text-white transition-colors flex-shrink-0">
             <Plus size={14} />
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Resume Upload ────────────────────────────────────────────────────────────
+
+function ResumeUploadSection() {
+  const [uploading, setUploading] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { toast.error("File too large (max 10MB)"); return; }
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Only PDF files are supported"); return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const publicUrl = await uploadResume(formData);
+      // Automatically save the URL to all profile hero records in the DB
+      await setResumeUrlAllProfiles(publicUrl);
+      setCurrentUrl(publicUrl);
+      toast.success("Resume uploaded & saved! All profiles updated.");
+      navigator.clipboard.writeText(publicUrl).catch(() => {});
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="bg-[#1a1a1a] border border-[rgba(255,255,255,0.08)] rounded-md p-5">
+      <h3 className="text-white font-bold mb-1">Resume Upload</h3>
+      <p className="text-[#555] text-xs mb-4">
+        Upload a PDF resume. The previous resume is auto-deleted to save storage space.
+        After uploading, paste the URL into the Homepage Hero &quot;Resume URL&quot; field and save.
+      </p>
+
+      <label className={cn(
+        "inline-flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-bold cursor-pointer transition-colors",
+        uploading ? "bg-[#333] text-[#555] cursor-not-allowed" : "bg-[#E50914] hover:bg-[#f40d1a] text-white"
+      )}>
+        <Upload size={14} />
+        {uploading ? "Uploading…" : "Choose Resume (PDF)"}
+        <input ref={fileRef} type="file" accept=".pdf,application/pdf" className="hidden" onChange={handleUpload} disabled={uploading} />
+      </label>
+
+      {currentUrl && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 bg-[#0a0a0a] border border-[rgba(255,255,255,0.1)] rounded-sm px-3 py-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E50914" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <input
+              readOnly
+              value={currentUrl}
+              className={cn(inputClass, "text-xs font-mono flex-1")}
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <button
+              onClick={() => { navigator.clipboard.writeText(currentUrl); toast.success("URL copied!"); }}
+              className="p-2 text-[#555] hover:text-white transition-colors flex-shrink-0"
+              title="Copy URL"
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+          <p className="text-[#444] text-[11px]">URL saved to all profiles automatically. Old resume deleted from storage.</p>
         </div>
       )}
     </div>
@@ -369,11 +449,6 @@ function HomepageHeroSection({ initialHeroes }: { initialHeroes: Record<ProfileT
       </div>
 
       <div>
-        <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Resume URL</label>
-        <input value={hero.resume_url} onChange={(e) => update("resume_url", e.target.value)} placeholder="/files/Resume.pdf" className={inputClass} />
-      </div>
-
-      <div>
         <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">LinkedIn URL</label>
         <input value={hero.linkedin_url} onChange={(e) => update("linkedin_url", e.target.value)} placeholder="https://linkedin.com/in/…" className={inputClass} />
       </div>
@@ -502,6 +577,12 @@ export function SettingsClient({ initialSettings, chatbotLastSynced }: { initial
         </div>
       </div>
       <ImageUpload />
+
+      {/* ─── Resume Upload ─── */}
+      <div>
+        <h2 className="text-[#808080] text-sm font-bold uppercase tracking-widest mb-6">📄 Resume</h2>
+        <ResumeUploadSection />
+      </div>
 
       {/* ─── Chatbot Data Sync ─── */}
       <div>
