@@ -52,7 +52,7 @@ export function ChatbotSyncButton({ initialLastSynced }: ChatbotSyncButtonProps)
       </div>
       <p className="text-[#555] text-xs mb-4">
         The AI chatbot uses cached portfolio data to answer questions.
-        Sync after updating your profile, skills, projects, or experience.
+        Sync after updating your profile, contact details, skills, projects, or experience.
       </p>
 
       {lastSynced && (

@@ -224,13 +224,38 @@ function ContactInfoCMS({ initialContactInfo }: { initialContactInfo: ContactInf
   const [links, setLinks] = useState<SocialLink[]>(initialContactInfo.social_links);
   const [isPending, startTransition] = useTransition();
 
+  async function syncChatbotCache() {
+    const res = await fetch("/api/chatbot/sync", { method: "POST" });
+    const payload = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const message =
+        payload && typeof payload.error === "string"
+          ? payload.error
+          : "Chatbot sync failed";
+      throw new Error(message);
+    }
+  }
+
   function saveSection(key: keyof ContactInfoData, value: unknown) {
     startTransition(async () => {
       try {
-        await upsertContactInfoKey(key, value as Record<string, unknown>);
-        toast.success("Saved");
+        await upsertContactInfoKey(key, value as Record<string, unknown> | unknown[]);
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Error saving");
+        return;
+      }
+
+      try {
+        await syncChatbotCache();
+        toast.success("Saved and chatbot cache synced");
+      } catch (err) {
+        toast.success("Saved");
+        toast.error(
+          err instanceof Error
+            ? `Contact saved, but chatbot sync failed: ${err.message}`
+            : "Contact saved, but chatbot sync failed"
+        );
       }
     });
   }
@@ -260,6 +285,10 @@ function ContactInfoCMS({ initialContactInfo }: { initialContactInfo: ContactInf
 
   return (
     <div className="space-y-6">
+      <p className="text-[#555] text-xs">
+        Saving any section here also refreshes chatbot cache so contact answers stay up to date.
+      </p>
+
       {/* Profile Card */}
       <Section title="Profile Card" onSave={() => saveSection("profile_card", info.profile_card)} isPending={isPending}>
         {(["name", "job_title", "bio", "location", "linkedin_url"] as const).map((field) => (
