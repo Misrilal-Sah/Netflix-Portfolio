@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@supabase/supabase-js";
+
+/** Untyped client for chatbot_cache (not in generated DB types) */
+function getRawAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ─── Rebuild system prompt from all DB tables ────────────────────────────────
 
@@ -85,12 +94,12 @@ ${certsLines}`;
 
 export async function POST() {
   try {
-    const db = createAdminClient();
+    const raw = getRawAdminClient();
     const prompt = await buildSystemPrompt();
 
     // Clear old cache and insert fresh
-    await db.from("chatbot_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    const { error } = await db.from("chatbot_cache").insert({ context_text: prompt });
+    await raw.from("chatbot_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    const { error } = await raw.from("chatbot_cache").insert({ context_text: prompt });
 
     if (error) {
       console.error("[chatbot/sync] Insert error:", error);

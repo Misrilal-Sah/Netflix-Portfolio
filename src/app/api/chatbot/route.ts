@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@supabase/supabase-js";
+
+/** Untyped client used only for the chatbot_cache table (not in generated DB types) */
+function getRawAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ─── Build the system prompt from all Supabase tables ────────────────────────
 
@@ -95,10 +104,10 @@ ${certsLines}`;
 // ─── Get or build cached system prompt ───────────────────────────────────────
 
 async function getSystemPrompt(): Promise<string> {
-  const db = createAdminClient();
+  const raw = getRawAdminClient();
 
   // Try cache first
-  const { data: cache } = await db
+  const { data: cache } = await raw
     .from("chatbot_cache")
     .select("context_text")
     .limit(1)
@@ -110,8 +119,8 @@ async function getSystemPrompt(): Promise<string> {
 
   // Build fresh and cache it
   const prompt = await buildSystemPrompt();
-  await db.from("chatbot_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000"); // clear all
-  await db.from("chatbot_cache").insert({ context_text: prompt });
+  await raw.from("chatbot_cache").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+  await raw.from("chatbot_cache").insert({ context_text: prompt });
   return prompt;
 }
 
