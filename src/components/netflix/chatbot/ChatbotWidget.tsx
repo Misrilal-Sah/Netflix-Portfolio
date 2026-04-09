@@ -28,8 +28,8 @@ export function ChatbotWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Don't render on admin routes
-  if (pathname.startsWith("/admin")) return null;
+  // Don't render on admin routes or the profile selection page
+  if (pathname.startsWith("/admin") || pathname === "/") return null;
 
   // Auto-scroll to bottom when messages change
   // eslint-disable-next-line react-hooks/rules-of-hooks
