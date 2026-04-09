@@ -12,11 +12,11 @@ export default async function AdminSettingsPage() {
 
     // Fetch chatbot cache timestamp
     const { data: cache } = await db
-      .from("chatbot_cache")
+      .from("chatbot_cache" as never)
       .select("updated_at")
       .limit(1)
-      .maybeSingle();
-    chatbotLastSynced = (cache?.updated_at as string) ?? null;
+      .maybeSingle() as { data: { updated_at: string } | null };
+    chatbotLastSynced = cache?.updated_at ?? null;
   } catch { /* no service key */ }
 
   return (
