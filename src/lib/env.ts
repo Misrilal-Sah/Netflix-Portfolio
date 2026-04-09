@@ -13,6 +13,7 @@ const serverSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   BREVO_API_KEY: z.string().optional(),
   RECAPTCHA_SECRET_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
 });
 
 const processEnv = {
@@ -29,6 +30,7 @@ const processEnv = {
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
   BREVO_API_KEY: process.env.BREVO_API_KEY ?? "",
   RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY ?? "",
+  GROQ_API_KEY: process.env.GROQ_API_KEY ?? "",
 };
 
 const publicEnv = publicSchema.parse(processEnv);

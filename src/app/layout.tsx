@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue } from "next/font/google";
 import "./globals.css";
+import { ChatbotWidget } from "@/components/netflix/chatbot/ChatbotWidget";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -77,6 +78,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {children}
+        <ChatbotWidget />
       </body>
     </html>
   );

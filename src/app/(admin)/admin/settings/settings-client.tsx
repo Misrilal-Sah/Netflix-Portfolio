@@ -6,6 +6,7 @@ import { Plus, Save, Upload, X } from "lucide-react";
 import { upsertSiteSetting, upsertHomepageHero } from "@/lib/actions/admin";
 import { uploadImage } from "@/lib/actions/upload";
 import { cn } from "@/lib/utils";
+import { ChatbotSyncButton } from "./ChatbotSyncButton";
 import {
   DEFAULT_EXPERIENCE_COPY,
   DEFAULT_ABOUT_COPY,
@@ -380,7 +381,7 @@ function HomepageHeroSection({ initialHeroes }: { initialHeroes: Record<ProfileT
   );
 }
 
-export function SettingsClient({ initialSettings }: { initialSettings: Array<{ key: string; value: Record<string, unknown> }> }) {
+export function SettingsClient({ initialSettings, chatbotLastSynced }: { initialSettings: Array<{ key: string; value: Record<string, unknown> }>; chatbotLastSynced?: string | null }) {
   const settingMap = Object.fromEntries(initialSettings.map((s) => [s.key, String(s.value?.value ?? "")]));
 
   // Extract persona copy settings — keyed per page
@@ -501,6 +502,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Array<{ k
         </div>
       </div>
       <ImageUpload />
+
+      {/* ─── Chatbot Data Sync ─── */}
+      <div>
+        <h2 className="text-[#808080] text-sm font-bold uppercase tracking-widest mb-6">🤖 Chatbot Data</h2>
+        <ChatbotSyncButton initialLastSynced={chatbotLastSynced ?? null} />
+      </div>
     </div>
   );
 }

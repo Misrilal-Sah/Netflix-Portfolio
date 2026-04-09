@@ -149,6 +149,13 @@ export interface ImageRecord {
   created_at: string;
 }
 
+export interface ChatbotCache {
+  id: string;
+  context_text: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Homepage CMS types ─────────────────────────────────────────────────────
 
 export type HomepageSectionType = "continue_watching" | "top_picks";
@@ -228,6 +235,7 @@ export interface Database {
       images: { Row: ImageRecord; Insert: Omit<ImageRecord, "id" | "created_at">; Update: Partial<Omit<ImageRecord, "id" | "created_at">>; Relationships: [] };
       homepage_cards: { Row: HomepageCard; Insert: HomepageCardInsert; Update: HomepageCardUpdate; Relationships: [] };
       homepage_project_picks: { Row: HomepageProjectPick; Insert: HomepageProjectPickInsert; Update: Partial<HomepageProjectPickInsert>; Relationships: [] };
+      chatbot_cache: { Row: ChatbotCache; Insert: Omit<ChatbotCache, "id" | "created_at" | "updated_at">; Update: Partial<Omit<ChatbotCache, "id" | "created_at" | "updated_at">>; Relationships: [] };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
