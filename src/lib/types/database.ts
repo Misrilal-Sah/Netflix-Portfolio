@@ -28,6 +28,7 @@ export interface Project {
   tags: string[];
   github_url: string | null;
   demo_url: string | null;
+  download_url: string | null;
   screenshot_url: string | null;
   readme_content: string | null;
   date_label: string | null;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ExternalLink, GitBranch } from "lucide-react";
+import { X, ExternalLink, GitBranch, Download } from "lucide-react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -156,6 +156,18 @@ export function ProjectDetailModal({
                     >
                       <ExternalLink size={16} />
                       {config.demo_text}
+                    </a>
+                  )}
+                  {!project.demo_url && project.download_url && (
+                    <a
+                      href={project.download_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded text-white text-sm font-bold transition-all duration-200 hover:brightness-110 hover:scale-105"
+                      style={{ backgroundColor: config.demo_color }}
+                    >
+                      <Download size={16} />
+                      Download
                     </a>
                   )}
                   {project.github_url && (

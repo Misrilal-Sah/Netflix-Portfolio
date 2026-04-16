@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, GitBranch, Info } from "lucide-react";
+import { ExternalLink, GitBranch, Info, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Project, ProjectButtonConfig } from "@/lib/types/database";
 import type { ProfileType } from "@/lib/constants";
@@ -127,6 +127,19 @@ export function ProjectCard({ project, profile, onDetails }: ProjectCardProps) {
                   >
                     <ExternalLink size={13} />
                     {config.demo_text}
+                  </a>
+                )}
+                {!project.demo_url && project.download_url && (
+                  <a
+                    href={project.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-md text-white text-xs font-bold transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg"
+                    style={{ backgroundColor: config.demo_color }}
+                  >
+                    <Download size={13} />
+                    Download
                   </a>
                 )}
                 <button

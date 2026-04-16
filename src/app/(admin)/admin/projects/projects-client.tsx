@@ -50,6 +50,7 @@ type FormValues = {
   tags: string;
   github_url: string;
   demo_url: string;
+  download_url: string;
   screenshot_url: string;
   date_label: string;
   readme_content: string;
@@ -124,6 +125,7 @@ function ProjectForm({ project, onDone, onSave }: ProjectFormProps) {
       tags: project?.tags?.join(", ") ?? "",
       github_url: project?.github_url ?? "",
       demo_url: project?.demo_url ?? "",
+      download_url: project?.download_url ?? "",
       screenshot_url: project?.screenshot_url ?? "",
       date_label: project?.date_label ?? "",
       readme_content: project?.readme_content ?? "",
@@ -188,6 +190,7 @@ function ProjectForm({ project, onDone, onSave }: ProjectFormProps) {
       tags: values.tags ? values.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
       github_url: values.github_url || null,
       demo_url: values.demo_url || null,
+      download_url: values.download_url || null,
       screenshot_url: values.screenshot_url || null,
       date_label: values.date_label || null,
       readme_content: values.readme_content || null,
@@ -284,6 +287,16 @@ function ProjectForm({ project, onDone, onSave }: ProjectFormProps) {
           <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Demo URL</label>
           <input {...register("demo_url")} type="url" className={inputClass} placeholder="https://…" />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-[#808080] text-xs font-bold uppercase tracking-wider mb-1.5">Download APK URL</label>
+        <input
+          {...register("download_url")}
+          type="url"
+          className={inputClass}
+          placeholder="https://… (leave empty if not applicable)"
+        />
       </div>
 
       <ImageUploadField
